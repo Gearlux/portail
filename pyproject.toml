@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "portaide"
+version = "0.1.0a1"
+description = "A framework for workspace web apps: serving, stop/restart/list, page events, the MCP server base and a filter language."
+readme = "README.md"
+authors = [{ name = "Gert Behiels" }]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dependencies = [
+    # 0.3.0 is the floor for `strict_flags=True` and the declared `short=` options every lifecycle command carries.
+    "liquifai>=0.3.0",
+    "loggair>=0.2.0",
+    # The MCP base hands every tool schema to `confluid.sanitize_schema`.
+    "confluid>=0.4.0",
+    # Imported at MODULE scope by portaide.web: the shell is a Flask app.
+    "flask>=3.0",
+    # Imported at MODULE scope by portaide.serving: a workspace file's host and port are read tag-blind with PyYAML.
+    "pyyaml",
+]
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+# The MCP server base (portaide.mcp). SDK 2.x: mcp.server.mcpserver.MCPServer — the 1.x module path does not exist
+# in 2.x and vice versa, hence the floor.
+mcp = ["mcp>=2.0"]
+dev = [
+    "mcp>=2.0",
+    "black>=24.0.0,<25.0.0",
+    "isort>=5.13.0,<6.0.0",
+    "flake8>=6.0.0,<8.0.0",
+    "mypy>=1.0.0,<2.0.0",
+    "types-PyYAML>=6.0.0",
+    "pytest>=7.0.0,<9.0.0",
+    "pytest-cov>=4.0.0,<7.0.0",
+    # tests/browsers.py drives the page in a real browser; `aisland setup` fetches its chromium after this extra.
+    "playwright>=1.40.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Gearlux/portaide"
+Repository = "https://github.com/Gearlux/portaide.git"
+Issues = "https://github.com/Gearlux/portaide/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["portaide*"]
+
+[tool.setuptools.package-data]
+portaide = ["py.typed", "web/static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# --cov-branch is REQUIRED here: `branch = true` below is read by the pytest process only, while pytest-cov tells
+# CHILD processes which mode to use through COV_CORE_BRANCH, which it exports only when the flag is on the command
+# line. The serving tests spawn real python children (tests/test_coverage_config.py).
+addopts = "--cov-branch -m 'not slow'"
+markers = ["slow: left out of the fast run, run by CI's slow leg"]
+
+[tool.coverage.run]
+source = ["portaide"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
