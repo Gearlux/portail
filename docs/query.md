@@ -6,7 +6,8 @@ comparison. `portaide.query` imports nothing beyond the standard library.
 
 ## Grammar
 
-Terms are joined by `and`; matching is case-insensitive.
+Terms are joined by `and`; matching is case-insensitive. An `and` inside quotes is part of the value:
+`dataset = "cats and dogs"` is one term.
 
 | term | matches when |
 | --- | --- |

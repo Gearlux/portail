@@ -286,6 +286,22 @@ class TestCombiningAndRefusing:
     def test_quoted_values_keep_their_spaces(self) -> None:
         assert parse('hf_file ~ "mnist_png/train"')(_classified()) is True
 
+    def test_an_and_inside_quotes_is_part_of_the_value(self) -> None:
+        record = {"dataset": Label("cats and dogs"), "class": Label(7)}
+        assert parse('dataset = "cats and dogs"')(record) is True
+        assert parse("dataset = 'cats AND dogs' and class = 7")(record) is True
+        assert parse('dataset = "cats and dogs" and class = 3')(record) is False
+        assert len(parse('dataset = "cats and dogs" and class = 7').terms) == 2
+
+    def test_a_bare_and_still_joins_two_terms(self) -> None:
+        """Unquoted, ``cats and dogs`` is ``dataset = cats`` and the NAME term ``dogs`` — the quotes are the way out."""
+        record = {"dataset": Label("cats and dogs")}
+        assert parse("dataset = cats and dogs")(record, {"name": "x"}) is False
+
+    def test_an_and_after_an_unclosed_quote_is_refused(self) -> None:
+        with pytest.raises(QueryError, match="cats and class"):  # the whole unclosed term, never half of it
+            parse('dataset = "cats and class = 7')
+
     def test_the_query_reports_which_entries_it_reads(self) -> None:
         """The caller restricts its walk to these — that is what keeps a filter affordable."""
         assert set(parse("class = 7 and hf_file ~ x").keys) == {"class", "hf_file"}

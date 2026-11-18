@@ -6,7 +6,7 @@ detection record; ``file ~ train/0`` is a filename; a FLAG word (``edited``) is 
 beside the record. One grammar covers them, which is why there is no per-attribute special case
 anywhere below.
 
-Grammar (terms joined by ``and``; matching is case-insensitive):
+Grammar (terms joined by ``and`` — never one inside quotes; matching is case-insensitive):
 
     class = 7                 an entry equals a value
     class != 7                …does not
@@ -288,7 +288,7 @@ def parse(text: str, aliases: Optional[Mapping[str, str]] = None, flags: Optiona
     used: List[str] = []
     state_keys: List[str] = []
     names: List[str] = []
-    for raw in re.split(r"\s+and\s+", (text or "").strip(), flags=re.IGNORECASE):
+    for raw in _clauses((text or "").strip()):
         clause = raw.strip()
         if not clause:
             continue
@@ -348,6 +348,32 @@ def parse(text: str, aliases: Optional[Mapping[str, str]] = None, flags: Optiona
             keys.append(value[1:])
         terms.append(_entry_term(key, op, value))
     return Filter(terms, keys, used, names, state_keys)
+
+
+_AND = re.compile(r"\s+and\s+", re.IGNORECASE)
+
+
+def _clauses(text: str) -> List[str]:
+    """The terms of ``text``, split on each ``and`` OUTSIDE quotes — so ``label = "cats and dogs"`` stays one term.
+
+    An ``and`` after a quote left open stays in the term, which is then refused whole.
+    """
+    inside = []
+    quote = ""
+    for char in text:
+        if quote:
+            quote = "" if char == quote else quote
+        elif char in "\"'":
+            quote = char
+        inside.append(bool(quote))
+    clauses: List[str] = []
+    start = 0
+    for joint in _AND.finditer(text):
+        if not inside[joint.start()]:
+            clauses.append(text[start : joint.start()])
+            start = joint.end()
+    clauses.append(text[start:])
+    return clauses
 
 
 def _listed_values(value: str, clause: str) -> Optional[List[str]]:
