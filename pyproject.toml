@@ -47,6 +47,12 @@ dev = [
     "types-PyYAML>=6.0.0",
     "pytest>=7.0.0,<9.0.0",
     "pytest-cov>=4.0.0,<7.0.0",
+    # Release tooling: `python -m build` produces the sdist + wheel (tests/test_packaging.py builds the wheel with
+    # `--no-isolation`, so the backend is declared here too), `twine check` validates the metadata.
+    "build>=1.0.0",
+    "twine>=5.0.0",
+    "setuptools>=77",
+    "wheel",
     # tests/browsers.py drives the page in a real browser; `aisland setup` fetches its chromium after this extra.
     "playwright>=1.40.0",
 ]
@@ -55,6 +61,7 @@ dev = [
 Homepage = "https://github.com/Gearlux/portail"
 Repository = "https://github.com/Gearlux/portail.git"
 Issues = "https://github.com/Gearlux/portail/issues"
+Changelog = "https://github.com/Gearlux/portail/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]

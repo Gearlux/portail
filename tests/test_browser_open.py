@@ -100,7 +100,9 @@ class TestTheOption:
             run(argv, monkeypatch)
         assert exit_info.value.code == 1
         out = said(capsys)
-        assert "--browser must be one of always, new, never; got 'sometimes'" in out
+        # liquifai refuses a value outside the three at the command line when it validates choices; an older one
+        # hands it on, and portail's own check refuses it — one line naming the option and the value either way.
+        assert "--browser must be" in out and "got 'sometimes'" in out
         assert "Traceback" not in out and browser_opens == []
 
     def test_a_python_caller_is_refused_too(self) -> None:

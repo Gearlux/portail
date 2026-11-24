@@ -1,0 +1,110 @@
+# =========================================================================
+# HAND-WRITTEN workflow — NOT generated with ci.yml / Jenkinsfile, so regenerating those never clobbers it.
+#
+# Publishes the `portail` distribution to PyPI when a version tag is pushed:
+#
+#   git tag v0.1.0a1 && git push origin v0.1.0a1
+#
+# Uses PyPI Trusted Publishing (OIDC, no stored API token). One-time setup on
+# https://pypi.org/manage/account/publishing/ — add a "pending publisher":
+#   PyPI project name: portail
+#   Owner:             Gearlux
+#   Repository:        portail
+#   Workflow name:     release.yml
+#   Environment:       pypi
+#
+# Publish ORDER: first in its chain. It declares floors on loggair, confluid and liquifai, which must be on PyPI first; the apps built on it declare a floor on this one.
+# =========================================================================
+name: Release to PyPI
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    name: Build & verify distribution
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.12"
+    - name: Install packaging toolchain
+      run: python -m pip install build twine
+    - name: Guard - tag matches pyproject version
+      run: |
+        PKG_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+        TAG_VERSION="${GITHUB_REF_NAME#v}"
+        if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+          echo "::error::Tag v$TAG_VERSION does not match pyproject version $PKG_VERSION"
+          exit 1
+        fi
+    - name: Build sdist + wheel
+      run: python -m build
+    - name: Check package metadata
+      run: python -m twine check --strict dist/*
+    - name: Smoke-test the built wheel in a clean venv
+      # Runs from /tmp: with the repo root as cwd, `import portail` would find the SOURCE tree (cwd shadows
+      # site-packages) and test the repo instead of the wheel — the repo directory and the package share a name.
+      run: |
+        python -m venv /tmp/smoke
+        /tmp/smoke/bin/pip install --quiet dist/*.whl
+        cd /tmp
+        /tmp/smoke/bin/python - <<'EOF'
+        import os
+        from importlib.metadata import version
+        from pathlib import Path
+
+        import portail
+        from portail import AppSpec, serving
+        from portail.web import create_shell
+
+        installed = Path(portail.__file__).parent
+        # The page's shell is static files inside the package and must ship: without them every page of an app built on
+        # it loads no shell.
+        for name in ("shell.js", "shell.css", "server-events.js", "index.html"):
+            assert (installed / "web" / "static" / name).exists(), f"{name} missing from the wheel"
+        assert (installed / "py.typed").exists(), "py.typed missing from the wheel"
+
+
+        class Demo:
+            host, port, path, template, title = "127.0.0.1", 8710, "", "", "demo"
+
+            def state_dir(self) -> Path:
+                return Path("/tmp/smoke-demo")
+
+            def info(self) -> dict:
+                return {"path": "", "template": "", "state_dir": "/tmp/smoke-demo"}
+
+
+        # The shell, served from the wheel without binding a port: the identity route and one of its files.
+        client = create_shell(serving.Server(AppSpec(name="demoapp", cli_module="demo"), Demo())).test_client()
+        assert client.get("/api/meta").get_json()["app"] == "demoapp"
+        assert client.get("/portail/shell.js").status_code == 200
+
+        # `__version__` is the RELEASED number: read from the wheel's own metadata, which the tag guard above matched.
+        tag = os.environ["GITHUB_REF_NAME"].removeprefix("v")
+        assert portail.__version__ == version("portail") == tag, (portail.__version__, version("portail"), tag)
+        print(f"wheel smoke-test OK, version: {version('portail')}")
+        EOF
+    - uses: actions/upload-artifact@v7
+      with:
+        name: dist
+        path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # required for PyPI Trusted Publishing (OIDC)
+    steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: dist
+        path: dist/
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
