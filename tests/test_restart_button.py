@@ -303,7 +303,7 @@ class TestTheRestartButton:
     def test_a_server_inside_another_program_says_so_and_the_page_stays(self) -> None:
         with served(DemoWorkspace()) as url, chromium_page(url) as page:
             page.click("#ws-restart")
-            page.wait_for_selector(".toast.error")
-            assert REFUSAL in page.inner_text(".toast.error")
+            page.wait_for_selector(".portaide-toast.error")
+            assert REFUSAL in page.inner_text(".portaide-toast.error")
             assert page.locator("#restarting").count() == 0
             assert page.locator("#top").is_visible()

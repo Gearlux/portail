@@ -128,6 +128,15 @@ class TestHasOneOfAList:
         assert parse("hf_file ~ train,0")(record) is True
         assert parse("hf_file ~ train, 0")(record) is False
 
+    def test_a_text_tests_value_runs_to_the_end_of_its_term(self) -> None:
+        """`~ KEY=20` looks for the text `KEY=20`: never a chain naming an entry `KEY` nobody has."""
+        record = {"file": Label("KEY=20/part2.bin")}
+        query = parse("file ~ KEY=20")
+        assert query.keys == ["file"]
+        assert query(record) is True
+        assert parse("file !~ KEY=10")(record) is True
+        assert parse("file ~ KEY=10 and file ~ part2")(record) is False
+
     def test_an_empty_value_in_the_list_is_refused(self) -> None:
         with pytest.raises(QueryError, match="empty value"):
             parse("class has 5,")

@@ -13,7 +13,7 @@ Grammar (terms joined by ``and`` — never one inside quotes; matching is case-i
     class has 7               ANY value of a multi-valued entry equals it (a box list carries several)
     class has 3, 7            …equals ANY of the listed values (a quoted value keeps its comma)
     snr 5..20                 ONE value lies between both ends, inclusive (`5..` / `..20` leave an end open)
-    file ~ train/0            the entry CONTAINS the text
+    file ~ train/0            the entry CONTAINS the text — all of it to the end of the term (`~ KEY=20`)
     1935                      a text with NO operator: the record's NAME holds it ("a = b" quoted for an operator)
     score > 0.8               numeric comparison (>, >=, <, <=)
     class != @pred_resnet     compare two ENTRIES — `@name` is "the value of that entry"
@@ -184,8 +184,16 @@ _CHAIN_TOKEN = re.compile(r"\"[^\"]*\"|'[^']*'|!=|>=|<=|!~|(?<![\w.@])has(?![\w.
 
 
 def _chain_operators(clause: str) -> int:
-    """How many comparison operators the clause carries OUTSIDE quotes."""
-    return sum(1 for token in _CHAIN_TOKEN.findall(clause) if token in OPERATORS)
+    """How many comparison operators the clause carries OUTSIDE quotes — 1 after a text test (``~``, ``!~``).
+
+    A text test's value is TEXT to the end of the clause, never an entry to chain on: ``file ~ KEY=20`` asks for a
+    file name holding ``KEY=20``. Read as a chain it named an entry ``KEY`` no record has, and a list's walk then read
+    every record in full to look for it.
+    """
+    operators = [token for token in _CHAIN_TOKEN.findall(clause) if token in OPERATORS]
+    if operators and operators[0] in ("~", "!~"):
+        return 1
+    return len(operators)
 
 
 def _resolve_operand(token: str, aliases: Mapping[str, str], is_last: bool, clause: str) -> "Tuple[str, str]":

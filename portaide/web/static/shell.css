@@ -19,5 +19,5 @@ body.exited { display: block; height: auto; padding: 2em; background: var(--port
 #not-answering { position: fixed; top: 0.5em; left: 50%; transform: translateX(-50%); z-index: 9000; background: var(--portaide-panel); color: var(--portaide-text); border: 1px solid var(--portaide-accent); border-radius: 4px; padding: 0.4em 0.8em; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
 #not-answering.hidden { display: none; }
 #not-answering button { margin-left: 0.6em; }
-.toast { position: fixed; bottom: 1em; left: 50%; transform: translateX(-50%); z-index: 9001; background: var(--portaide-panel); color: var(--portaide-text); border: 1px solid var(--portaide-line); border-radius: 4px; padding: 0.4em 0.8em; }
-.toast.error { border-color: var(--portaide-error); color: var(--portaide-error); }
+.portaide-toast { position: fixed; bottom: 1em; left: 50%; transform: translateX(-50%); z-index: 9001; background: var(--portaide-panel); color: var(--portaide-text); border: 1px solid var(--portaide-line); border-radius: 4px; padding: 0.4em 0.8em; }
+.portaide-toast.error { border-color: var(--portaide-error); color: var(--portaide-error); }

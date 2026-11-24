@@ -52,7 +52,7 @@
 
   Portaide.toast = (message, isError = false) => {
     const toast = document.createElement("div");
-    toast.className = isError ? "toast error" : "toast";
+    toast.className = isError ? "portaide-toast error" : "portaide-toast";
     toast.textContent = message;
     document.body.append(toast);
     setTimeout(() => toast.remove(), isError ? 8000 : 4000);
