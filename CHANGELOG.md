@@ -21,6 +21,8 @@ The first release.
   workspace when the app says how. A workspace can carry serving options of the app's own.
 - **The page's shell** (`mount_shell`): `/api/meta`, the ⏻ and ↻ buttons, and every open page told when its server
   goes or restarts.
+- **Jobs** (`portail.jobs`): background work in a thread of its own, with its count, a cooperative stop, one job
+  per key, and the list a page polls.
 - **The MCP server base** (`portail.mcp`, the `[mcp]` extra): an LLM-safe server whose tools talk to the running app,
   and the choice of which running server a tool reaches.
 - **The filter language** a records list is searched with (`portail.query`), the app's flag words declared.

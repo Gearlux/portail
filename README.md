@@ -7,6 +7,8 @@ is managed from the command line. portail holds everything that does not depend 
   opened once the server answers;
 - **`stop` / `restart` / `list`** by the server's IDENTITY (its live `/api/meta` answer), never by a port alone;
 - **the page's shell**: `/api/meta`, the ⏻ and ↻ buttons, and every open page told when its server goes;
+- **jobs**: background work with its progress and a cooperative stop
+  ([docs/jobs.md](https://github.com/Gearlux/portail/blob/main/docs/jobs.md));
 - the MCP server base ([docs/mcp.md](https://github.com/Gearlux/portail/blob/main/docs/mcp.md)) and the filter
   language a records list is searched with ([docs/query.md](https://github.com/Gearlux/portail/blob/main/docs/query.md)).
 
@@ -150,8 +152,11 @@ workspace: it opens what it names.
 each entry carries `host`, `port`, `label`, `identity`, `path`, `template`, `state_dir` and `pid`.
 `portail.serving.post_json` / `get_json` talk to one of them, with every failure one `ServeError` line.
 
-## The MCP server base, the filter language, the protocols
+## Jobs, the MCP server base, the filter language, the protocols
 
+- **Jobs**: `portail.jobs.Jobs().start(key, title, work)` runs `work(job)` in a thread of its own; the work steps
+  the job (`job.step()`), reads the stop between items (`job.stop_asked`, or `job.check_stop()`), and `Jobs.list()`
+  is what the app's page polls. See [docs/jobs.md](https://github.com/Gearlux/portail/blob/main/docs/jobs.md).
 - **MCP server base** (`pip install portail[mcp]`): `portail.mcp.make_server(spec, instructions)` and
   `ServerChoice(spec, start_hint=...)` give an app tools that relay to its running page. The user picks the server —
   a `port` argument, a question to the user, or a kept "always" answer — and every failure answers in-band. See

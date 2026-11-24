@@ -9,13 +9,14 @@ Root `AGENTS.md` rules are not repeated here.
   Flask page and is managed from the command line; portail holds everything that does not depend on what the
   workspace holds: serving (foreground or detached), `stop` / `restart` / `list` by the server's identity, the
   browser opened on an answer, the page's shell (`/api/meta`, ⏻, ↻, every open page told when its server goes), the
-  MCP server base, and the filter language a records list is searched with.
+  jobs (background work with its progress and a stop), the MCP server base, and the filter language a records list
+  is searched with.
 - **The seam** (`portail/spec.py`): an app supplies an `AppSpec` (its name, CLI module, default port, state folder,
   whether its workspace is a `"file"` or a `"folder"`, `Hooks`) and a workspace implementing the `Served` protocol
   (`host`, `port`, `path`, `template`, `title`, `state_dir()`, `info()`; optionally `options`, the app's own serving
   options). portail imports nothing of any app.
 - **Module map:** `spec` · `errors` · `serving` · `cli` · `web` (the shell, `pages`) · `web/static/` (vanilla JS, no
-  build step) · `mcp` · `query` · `protocols`.
+  build step) · `jobs` · `mcp` · `query` · `protocols`.
 
 ## Rules
 
@@ -74,10 +75,15 @@ Usage: [`docs/serving.md`](docs/serving.md); reasons: [`docs/architecture.md`](d
   `conftest._no_live_http` closes; a test that needs HTTP opens it itself. Real processes in tests run on free ports
   with their own HOME — never a port of the operator's, never a stop of a process the test did not start.
 
-## The MCP server base, the filter language, the protocols
+## Jobs, the MCP server base, the filter language, the protocols
 
-Usage: [`docs/mcp.md`](docs/mcp.md), [`docs/query.md`](docs/query.md); reasons: `docs/architecture.md` §13-18.
+Usage: [`docs/jobs.md`](docs/jobs.md), [`docs/mcp.md`](docs/mcp.md), [`docs/query.md`](docs/query.md); reasons:
+`docs/architecture.md` §13-19.
 
+- **A job is stopped only by its own work:** `Jobs.stop` sets a flag and answers; `stopped` is set by a work that
+  READ the flag (`stop_asked`) or was thrown out by `check_stop()` — never by the stop itself, never by
+  interrupting an op. One job per key; a second start answers the running one. `portail.jobs` imports no Flask and
+  mounts no route. (`tests/test_jobs.py`) arch §19.
 - **The MCP server is a CLIENT of the served page:** every tool answers in-band and never raises, never starts the
   app, and the process always starts. The user picks the server — `port`, else the SDK's `Resolve`/`Elicit` question,
   never `ctx.elicit()`; an "always" answer is kept per client name in `spec.state_dir() / "mcp-clients.json"`.

@@ -242,3 +242,22 @@ library.
 
 **Consequences.** A domain package conforms by shape alone; `isinstance` checks member presence, never signatures, so
 the protocols document the contract and the tests of each implementation hold it.
+
+## 19. Background work is a job: one list, one stop, no route
+
+**Context.** A run over every record took minutes inside a request, with no progress and no stop; where an app had
+several such runs, each grew a thread, a progress dict, a progress route and a page poll of its own. Two apps then
+held two copies of one answer, differing in small ways: how the work stops, what a second start under a running key
+does, the shape of the state.
+
+**Decision.** `portail.jobs` holds the one mechanism. A `Job` carries a count (`done` of `total` `unit`), a message,
+per-kind counts and its ending; `Jobs` starts each in a thread, one per key, and lists the running ones with the
+last `KEPT` ended. A stop is cooperative: the flag is set at once and read between items, by `stop_asked` (the work
+returns) or `check_stop()` (the work is thrown out, `JobStopped`); what was done is kept. A second start under a
+running key answers the running job; an app that would rather refuse asks `running(key)` first. The state holds both
+readings of an ending — the flags (`running`, `stopped`, `error`) and the one word `status`. portail mounts no route:
+each app answers the list and the stop in its own shape.
+
+**Consequences.** An app keeps a `Jobs` on its workspace and two routes. A failed work's `error` names the exception's
+type; its `message` (`<title> failed: <text>`) is the line a page says. Jobs are never workspace content: a restart
+empties the list.
