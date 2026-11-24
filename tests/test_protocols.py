@@ -1,4 +1,4 @@
-"""The structural protocols a domain package implements without importing portaide (``portaide.protocols``).
+"""The structural protocols a domain package implements without importing portail (``portail.protocols``).
 
 Each is runtime-checkable: an object offering the members passes ``isinstance``; one missing a member does not.
 """
@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from portaide.protocols import Canvas, Extent, Opener, Recording, Recordings
+from portail.protocols import Canvas, Extent, Opener, Recording, Recordings
 
 WHOLE: Extent = {"x0": 0.0, "x1": 1.0, "y0": 0.0, "y1": 2.0}
 

@@ -1,0 +1,23 @@
+/* The page's shell (shell.js): ⏻ and ↻, the page a stopped or restarting server leaves, the not-answering bar.
+   Colours come from the host page's variables when it defines them. */
+:root {
+  --portail-bg: var(--bg, #1e1e1e);
+  --portail-panel: var(--panel, #252526);
+  --portail-text: var(--text, #d4d4d4);
+  --portail-accent: var(--accent, #4fc1ff);
+  --portail-line: var(--line, #3c3c3c);
+  --portail-error: var(--error, #f48771);
+}
+.portail-button { font-size: 1.1em; cursor: pointer; }
+/* The page once ⏻ has stopped its server and the browser would not close the tab, and while ↻ waits for the restarted
+   server: the app's rows are gone, so the body is no longer whatever layout placed them. */
+body.exited { display: block; height: auto; padding: 2em; background: var(--portail-bg); color: var(--portail-text); }
+#exited h1, #restarting h1 { font-size: 1.4em; margin: 0 0 0.6em; color: var(--portail-accent); }
+#exited p, #restarting p { max-width: 50em; line-height: 1.5; overflow-wrap: anywhere; }
+#exited code, #restarting code { background: var(--portail-panel); border: 1px solid var(--portail-line); border-radius: 4px; padding: 0 4px; }
+/* The bar over the page while its server does not answer: fixed, so nothing under it moves. */
+#not-answering { position: fixed; top: 0.5em; left: 50%; transform: translateX(-50%); z-index: 9000; background: var(--portail-panel); color: var(--portail-text); border: 1px solid var(--portail-accent); border-radius: 4px; padding: 0.4em 0.8em; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); }
+#not-answering.hidden { display: none; }
+#not-answering button { margin-left: 0.6em; }
+.portail-toast { position: fixed; bottom: 1em; left: 50%; transform: translateX(-50%); z-index: 9001; background: var(--portail-panel); color: var(--portail-text); border: 1px solid var(--portail-line); border-radius: 4px; padding: 0.4em 0.8em; }
+.portail-toast.error { border-color: var(--portail-error); color: var(--portail-error); }

@@ -14,7 +14,7 @@ server sends ``leaving`` down every stream before it goes:
   that brings the workspace back on ANOTHER port tells the old pages ``exit``: nothing comes back there.
 
 A server that dies without a word (``kill -9``, a crash) cannot send anything: the page sees its stream drop and, when
-it does not come back within ``Portaide.NOT_ANSWERING_MS``, says the server is not answering, with a Retry. A stream
+it does not come back within ``Portail.NOT_ANSWERING_MS``, says the server is not answering, with a Retry. A stream
 that comes back hides it.
 """
 
@@ -31,10 +31,10 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import pytest
 
-from portaide import AppSpec, Hooks, serving
-from portaide.serving import Server
-from portaide.web import create_shell
-from portaide.web.pages import PageChannel, channel_of, tell_pages_leaving
+from portail import AppSpec, Hooks, serving
+from portail.serving import Server
+from portail.web import create_shell
+from portail.web.pages import PageChannel, channel_of, tell_pages_leaving
 from tests import test_exit
 from tests.browsers import chromium_page, serving_app
 from tests.demo_cli import DEMO_SPEC, KEPT, DemoWorkspace, lifecycle
@@ -226,7 +226,7 @@ class TestServeTellsThePagesOnEveryWayOut:
             order.append("pages told")
             return 0
 
-        monkeypatch.setattr("portaide.web.pages.tell_pages_leaving", told)
+        monkeypatch.setattr("portail.web.pages.tell_pages_leaving", told)
         spec = AppSpec(
             name="demoapp",
             cli_module="tests.demo_cli",
@@ -251,7 +251,7 @@ class TestServeTellsThePagesOnEveryWayOut:
         def broken(app: Any, server: Server) -> int:
             raise RuntimeError("socket gone")
 
-        monkeypatch.setattr("portaide.web.pages.tell_pages_leaving", broken)
+        monkeypatch.setattr("portail.web.pages.tell_pages_leaving", broken)
         server.serve()
         assert order == ["starting", "leaving"]
 
@@ -459,7 +459,7 @@ def _url(socket_server: Any) -> str:
 
 
 def _listening(page: Any) -> None:
-    page.wait_for_function("() => window.Portaide && Portaide.serverListening")
+    page.wait_for_function("() => window.Portail && Portail.serverListening")
 
 
 def _wait_for_pages(app: Any, count: int) -> None:
@@ -547,7 +547,7 @@ class TestThePages:
         workspace = DemoWorkspace()
         with serving_app(workspace) as (app, socket_server, _s), chromium_page(_url(socket_server)) as page:
             port = socket_server.server_port
-            page.evaluate("() => { Portaide.NOT_ANSWERING_MS = 300; }")
+            page.evaluate("() => { Portail.NOT_ANSWERING_MS = 300; }")
             _listening(page)
             _wait_for_pages(app, 1)
             socket_server.shutdown()

@@ -1,6 +1,6 @@
-"""What an app tells portaide: who it is (:class:`AppSpec`), what it serves (:class:`Served`), and its hooks.
+"""What an app tells portail: who it is (:class:`AppSpec`), what it serves (:class:`Served`), and its hooks.
 
-An app built on portaide serves ONE object — its workspace — behind a Flask page. portaide knows nothing of what the
+An app built on portail serves ONE object — its workspace — behind a Flask page. portail knows nothing of what the
 workspace holds: it serves it, finds it again by its identity, stops and restarts it, and tells its pages when it
 goes. Everything it needs to do so is here.
 """
@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, Optional, Protocol, runtime_checkable
 
 @runtime_checkable
 class Served(Protocol):
-    """The workspace an app serves, as portaide sees it.
+    """The workspace an app serves, as portail sees it.
 
     Attributes:
         host: The address the page is served on (``127.0.0.1``).

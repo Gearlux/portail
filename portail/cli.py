@@ -1,7 +1,7 @@
 """The lifecycle commands, added to an app's own liquifai CLI: ``open`` (the default), ``workspace <type>``, ``stop``,
 ``restart`` and ``list``.
 
-An app builds its CLI and hands portaide what only it knows — how to open a workspace file, an empty workspace and a
+An app builds its CLI and hands portail what only it knows — how to open a workspace file, an empty workspace and a
 type workspace::
 
     app = LiquifyApp(name="demoapp", description="…", strict_flags=True)
@@ -24,10 +24,10 @@ import yaml
 from liquifai import LiquifyApp
 from liquifai.exceptions import ConfigNotFoundError
 
-from portaide import serving
-from portaide.errors import ServeError
-from portaide.serving import Address, BrowserChoice
-from portaide.spec import AppSpec, Served
+from portail import serving
+from portail.errors import ServeError
+from portail.serving import Address, BrowserChoice
+from portail.spec import AppSpec, Served
 
 if TYPE_CHECKING:
     from flask import Flask
@@ -55,7 +55,7 @@ class Lifecycle:
         open_empty: An EMPTY workspace (what a bare ``<name>`` serves).
         open_type: Open a TYPE workspace by name (``<name> workspace <type>``) — ``None``: the app has no types.
         type_names: Every type ``open_type`` opens (also the TAB completions).
-        create_app: The app's Flask app for a :class:`~portaide.serving.Server`; unset → the bare shell.
+        create_app: The app's Flask app for a :class:`~portail.serving.Server`; unset → the bare shell.
     """
 
     def __init__(
@@ -120,7 +120,7 @@ class Lifecycle:
         return continued(folder, template)
 
     def serve(self, target: Served, **kwargs: Any) -> None:
-        """:func:`~portaide.serving.serve_workspace` with the app's Flask app."""
+        """:func:`~portail.serving.serve_workspace` with the app's Flask app."""
         serving.serve_workspace(self.spec, target, create_app=self.create_app, **kwargs)
 
     # -- the commands ---------------------------------------------------------------------------------------------
@@ -359,7 +359,7 @@ class Lifecycle:
 
         A port where nothing answers as the app is refused in one of two ways, told apart by whether anything LISTENS
         there: a program that is not the app gets the refusal ``stop <port>`` gives
-        (:func:`~portaide.serving.refuse_a_foreign_holder`), a port nobody listens on gets "nothing is serving".
+        (:func:`~portail.serving.refuse_a_foreign_holder`), a port nobody listens on gets "nothing is serving".
         """
         servers = serving.running_servers(self.spec)
         server = serving.server_on_port(self.spec, port, servers)
@@ -406,7 +406,7 @@ class Lifecycle:
 
         * a PORT: the never-saved workspace serving there (found by its live answer);
         * bare, when the last served workspace was a never-saved one: the never-saved workspace served last that runs
-          or holds work (:func:`~portaide.serving.last_unsaved`), else the one never-saved server of that kind running;
+          or holds work (:func:`~portail.serving.last_unsaved`), else the one never-saved server of that kind running;
         * a TYPE name: the never-saved workspace of that type running, else the one served last when of that type.
 
         A workspace FILE, a name that is neither, a saved workspace and ``restart <another type>`` are none of these.
@@ -633,7 +633,7 @@ def add_lifecycle_commands(
         open_empty: An empty workspace.
         open_type: Open a type workspace by name; ``None``: no ``workspace`` command.
         type_names: Every type ``open_type`` opens (TAB completions too).
-        create_app: The app's Flask app for a :class:`~portaide.serving.Server` (the shell mounted in it); unset → the
+        create_app: The app's Flask app for a :class:`~portail.serving.Server` (the shell mounted in it); unset → the
             bare shell.
     """
     life = Lifecycle(

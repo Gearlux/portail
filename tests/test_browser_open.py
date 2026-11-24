@@ -19,9 +19,9 @@ from typing import Any, Dict, List, Optional, get_args
 
 import pytest
 
-from portaide import serving
-from portaide.cli import Continuation
-from portaide.errors import ServeError
+from portail import serving
+from portail.cli import Continuation
+from portail.errors import ServeError
 from tests.cli_output import said
 from tests.conftest import run
 from tests.demo_cli import DEMO_PORT, DemoWorkspace, app, lifecycle

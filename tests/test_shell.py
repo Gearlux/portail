@@ -2,7 +2,7 @@
 
 An app keeps its own page and API; the shell adds ``/api/meta`` (the identity every discovery reads),
 ``/api/workspace``,
-⏻ / ↻, the event stream, and its files under ``/portaide/`` — never the app's ``/static``. A path proxy that serves the
+⏻ / ↻, the event stream, and its files under ``/portail/`` — never the app's ``/static``. A path proxy that serves the
 app under a prefix (``/proxy/8787/``) keeps working because the page asks nothing by an absolute path.
 """
 
@@ -16,9 +16,9 @@ from typing import Any, Iterator
 import pytest
 from flask import Flask
 
-from portaide import serving
-from portaide.serving import Server
-from portaide.web import STATIC, create_shell, mount_shell, server_of
+from portail import serving
+from portail.serving import Server
+from portail.web import STATIC, create_shell, mount_shell, server_of
 from tests.browsers import chromium_page, serving_app
 from tests.demo_cli import DEMO_SPEC, DemoWorkspace
 
@@ -41,16 +41,16 @@ class TestTheRoutes:
     def test_the_shells_files_are_served_under_their_own_prefix(self) -> None:
         client = create_shell(_server()).test_client()
         for name in ("shell.js", "shell.css", "server-events.js", "index.html"):
-            response = client.get(f"/portaide/{name}")
+            response = client.get(f"/portail/{name}")
             assert response.status_code == 200, name
             assert response.headers["Cache-Control"] == "no-cache"
             response.close()
-        missing = client.get("/portaide/nope.js")
+        missing = client.get("/portail/nope.js")
         assert missing.status_code == 404
 
     def test_a_bare_shell_serves_its_minimal_page(self) -> None:
         response = create_shell(_server()).test_client().get("/")
-        assert response.status_code == 200 and b"portaide/shell.js" in response.data
+        assert response.status_code == 200 and b"portail/shell.js" in response.data
         response.close()
 
     def test_the_server_is_found_on_the_app(self) -> None:
@@ -112,8 +112,8 @@ class TestEveryAddressIsRelative:
         try:
             url = f"http://127.0.0.1:{socket_server.server_port}/proxy/8710/"
             with chromium_page(url) as page:
-                page.wait_for_function("() => Portaide.serverListening")
-                assert page.evaluate("() => Portaide.meta.app") == "demoapp"
+                page.wait_for_function("() => Portail.serverListening")
+                assert page.evaluate("() => Portail.meta.app") == "demoapp"
                 assert page.inner_text("#title") == "demoapp — mine"
         finally:
             socket_server.shutdown()
@@ -132,7 +132,7 @@ class TestDiscoveryOfARealServer:
         with self._real_http(monkeypatch), serving_app(DemoWorkspace(title="mine")) as (_app, socket_server, _s):
             answer = serving.app_at(DEMO_SPEC, "127.0.0.1", socket_server.server_port)
             assert answer is not None and answer["title"] == "mine"
-            from portaide import AppSpec
+            from portail import AppSpec
 
             other = AppSpec(name="otherapp", cli_module="x")
             assert serving.app_at(other, "127.0.0.1", socket_server.server_port) is None

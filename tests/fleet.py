@@ -6,8 +6,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
-from portaide import serving
-from portaide.spec import Served
+from portail import serving
+from portail.spec import Served
 
 #: A process that binds no port — an MCP server of a client, say — whose life is its own: a stop never signals it.
 OTHER_PROCESSES = {

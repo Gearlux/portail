@@ -1,4 +1,4 @@
-"""The demo app every test builds on: a tiny workspace app on portaide, and its command line.
+"""The demo app every test builds on: a tiny workspace app on portail, and its command line.
 
 ``python -m tests.demo_cli`` is a real app — ``demoapp [file]``, ``demoapp workspace <type>``, ``stop``, ``restart``,
 ``list`` — whose workspace is a few settings in a YAML file (``workspace: {port: 9001, title: mine}``). Its hooks turn
@@ -15,8 +15,8 @@ import yaml
 from liquifai import LiquifyApp
 from liquifai.exceptions import LiquifaiError
 
-from portaide import AppSpec, Hooks, Served
-from portaide.cli import add_lifecycle_commands
+from portail import AppSpec, Hooks, Served
+from portail.cli import add_lifecycle_commands
 
 #: The demo's default port — far from any port a person's own servers use in this workspace.
 DEMO_PORT = 8710
@@ -38,7 +38,7 @@ class DemoFileError(LiquifaiError, ValueError):
 
 
 class DemoWorkspace:
-    """A workspace of a few settings, implementing :class:`~portaide.spec.Served`."""
+    """A workspace of a few settings, implementing :class:`~portail.spec.Served`."""
 
     def __init__(
         self,

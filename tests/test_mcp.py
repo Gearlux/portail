@@ -1,4 +1,4 @@
-"""The MCP server base (``portaide.mcp``): an app's running workspace as AI-callable tools.
+"""The MCP server base (``portail.mcp``): an app's running workspace as AI-callable tools.
 
 A tiny demo app builds its server on the base — :func:`make_server`, a :class:`ServerChoice`, and tools that relay to
 its page — and the tests call those tools through the SDK's in-process client, so the "which server?" question
@@ -26,9 +26,9 @@ from mcp.server.lowlevel.server import NotificationOptions
 from mcp.types import ElicitRequestParams, ElicitResult, Implementation
 from pydantic import BaseModel
 
-import portaide.mcp as base
-from portaide.mcp import LLMSafeMCPServer, RelayError, ServerChoice, Target, make_server, query_string
-from portaide.spec import AppSpec
+import portail.mcp as base
+from portail.mcp import LLMSafeMCPServer, RelayError, ServerChoice, Target, make_server, query_string
+from portail.spec import AppSpec
 
 # Keywords the Gemini / OpenAPI-3.0 function-calling subset rejects.
 _FORBIDDEN = ('"$ref"', '"$defs"', '"definitions"', '"const"', '"additionalProperties"')
@@ -252,16 +252,16 @@ class TestWhenNoServerIsRunning:
     def test_the_servers_are_those_serving_finds_for_the_spec(
         self, app: DemoApp, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """The real lookup asks ``portaide.serving.running_servers`` for this spec's servers, imported at call time."""
+        """The real lookup asks ``portail.serving.running_servers`` for this spec's servers, imported at call time."""
         asked: List[AppSpec] = []
-        serving = types.ModuleType("portaide.serving")
+        serving = types.ModuleType("portail.serving")
 
         def running_servers(spec: AppSpec) -> List[Dict[str, Any]]:
             asked.append(spec)
             return [FIRST]
 
         serving.running_servers = running_servers  # type: ignore[attr-defined]
-        monkeypatch.setitem(sys.modules, "portaide.serving", serving)
+        monkeypatch.setitem(sys.modules, "portail.serving", serving)
         assert base._running_servers(app.spec) == [FIRST] and asked == [app.spec]
 
 

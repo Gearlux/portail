@@ -1,6 +1,6 @@
 """Serving an app's workspace — in the foreground or detached — and finding, stopping and restarting it again.
 
-Everything here is parameterised by the app's :class:`~portaide.spec.AppSpec`: its name is in every message and file
+Everything here is parameterised by the app's :class:`~portail.spec.AppSpec`: its name is in every message and file
 name, its state folder holds the registry (``<state>/servers/<port>.json``), the last served workspace
 (``<state>/last-workspace``) and the never-saved workspaces served (``<state>/unsaved-workspaces.json``).
 
@@ -8,8 +8,8 @@ A server is found by its IDENTITY, read from its LIVE ``/api/meta`` answer (``{"
 never from the registry copy alone; a stop signals only the pids LISTENING on the ports of the servers it stops
 (:func:`pids_listening`), and a listener that does not answer as the app is never signalled.
 
-:class:`Server` serves one :class:`~portaide.spec.Served` workspace behind the app's Flask app (the page's shell —
-``portaide.web`` — mounted in it): its way out (Ctrl+C, SIGTERM, SIGHUP, the page's ⏻) tells every open page first,
+:class:`Server` serves one :class:`~portail.spec.Served` workspace behind the app's Flask app (the page's shell —
+``portail.web`` — mounted in it): its way out (Ctrl+C, SIGTERM, SIGHUP, the page's ⏻) tells every open page first,
 then runs the app's ``leaving`` hook. The command-line side (:func:`serve_workspace`) settles the port, registers the
 server, opens the browser on an answer and starts a ``--background`` child.
 """
@@ -32,8 +32,8 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, 
 
 from loggair import get_logger
 
-from portaide.errors import PortInUseError, ServeError
-from portaide.spec import AppSpec, Served
+from portail.errors import PortInUseError, ServeError
+from portail.spec import AppSpec, Served
 
 if TYPE_CHECKING:  # annotation only: the web package imports this module
     from flask import Flask
@@ -716,7 +716,7 @@ def tell_server_it_restarts(host: str, port: int) -> None:
     """Tell the server on ``host:port`` that the stop about to come is a restart — before the signal.
 
     Every page open on it then shows "restarting…" and reloads once the new server answers, where a stop's pages show
-    "has exited" and close (``portaide.web.pages``). A server that does not take the word — one too stuck to answer —
+    "has exited" and close (``portail.web.pages``). A server that does not take the word — one too stuck to answer —
     is stopped all the same; its pages then hear ``exit``.
     """
     request = urllib.request.Request(
@@ -1117,13 +1117,13 @@ def _interrupt(signum: int, frame: Any) -> None:  # frame: the interrupted stack
 
 
 class Server:
-    """One app's workspace, served: the lifecycle :class:`~portaide.spec.Served` needs and the page's shell asks.
+    """One app's workspace, served: the lifecycle :class:`~portail.spec.Served` needs and the page's shell asks.
 
     Args:
         spec: The app.
         served: The workspace it serves.
-        create_app: Makes the app's Flask app for this server, with the shell mounted (``portaide.web.mount_shell``);
-            unset → the bare shell (``portaide.web.create_shell``).
+        create_app: Makes the app's Flask app for this server, with the shell mounted (``portail.web.mount_shell``);
+            unset → the bare shell (``portail.web.create_shell``).
     """
 
     #: True while :meth:`serve` holds SIGTERM's handler (on the main thread): only then does a SIGTERM to this process
@@ -1237,7 +1237,7 @@ class Server:
         """The Flask app this server runs: the app's own (``create_app``), else the bare shell."""
         if self._create_app is not None:
             return self._create_app(self)
-        from portaide.web.shell import create_shell
+        from portail.web.shell import create_shell
 
         return create_shell(self)
 
@@ -1246,14 +1246,14 @@ class Server:
 
         When a server of the app is ALREADY serving this address, that is not a failure: what the user asked for — the
         app reachable here — is already true. Hand them the URL and return. A port held by anything else is a
-        :class:`~portaide.errors.PortInUseError`.
+        :class:`~portail.errors.PortInUseError`.
 
         ``Hooks.starting`` runs before the app answers. Ctrl+C (SIGINT), SIGTERM — what ``stop`` and ``restart`` send —
         and SIGHUP (the terminal closed) all end ``app.run`` the same way, and the way out tells every open page FIRST
-        (``portaide.web.pages.tell_pages_leaving``), then runs ``Hooks.leaving``. A kill -9 or a crash cannot keep
+        (``portail.web.pages.tell_pages_leaving``), then runs ``Hooks.leaving``. A kill -9 or a crash cannot keep
         anything.
         """
-        from portaide.web import pages
+        from portail.web import pages
 
         served, name = self.served, self.spec.name
         _quiet_request_logs()

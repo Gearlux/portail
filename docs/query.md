@@ -1,8 +1,8 @@
-# The filter language (`portaide.query`)
+# The filter language (`portail.query`)
 
 One predicate language for searching a records list by what each record CARRIES. A record is a dict of entries; every
 term is a test against an entry, so a class, a filename and a box label all go through the same parse and the same
-comparison. `portaide.query` imports nothing beyond the standard library.
+comparison. `portail.query` imports nothing beyond the standard library.
 
 ## Grammar
 
@@ -29,7 +29,7 @@ message says what to write.
 ## Using it
 
 ```python
-from portaide.query import entry_values, flag_pairs, parse
+from portail.query import entry_values, flag_pairs, parse
 
 FLAGS = flag_pairs("edited", "changed")  # edited, unedited, changed, unchanged
 

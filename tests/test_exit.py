@@ -27,10 +27,10 @@ from typing import Any, Iterator, List
 
 import pytest
 
-from portaide import serving
-from portaide.errors import ServeError
-from portaide.serving import Server
-from portaide.web import create_shell
+from portail import serving
+from portail.errors import ServeError
+from portail.serving import Server
+from portail.web import create_shell
 from tests.browsers import answer_confirm, chromium_page, ready, served
 from tests.demo_cli import DEMO_SPEC, KEPT, DemoWorkspace
 
@@ -338,7 +338,7 @@ class TestTheExitButton:
     def test_the_host_pages_own_question_can_keep_the_server(self, stopped: threading.Event) -> None:
         with served(DemoWorkspace()) as url, chromium_page(url) as page:
             page.evaluate(
-                "() => { Portaide.beforeLeaving = async (what) => { window.askedFor = what; return false; }; }"
+                "() => { Portail.beforeLeaving = async (what) => { window.askedFor = what; return false; }; }"
             )
             page.click("#ws-exit")
             page.wait_for_function("() => window.askedFor === 'exit'")
@@ -347,7 +347,7 @@ class TestTheExitButton:
     def test_a_server_inside_another_program_says_so_and_the_page_stays(self) -> None:
         with served(DemoWorkspace()) as url, chromium_page(url) as page:
             page.click("#ws-exit")
-            page.wait_for_selector(".portaide-toast.error")
-            assert REFUSAL in page.inner_text(".portaide-toast.error")
+            page.wait_for_selector(".portail-toast.error")
+            assert REFUSAL in page.inner_text(".portail-toast.error")
             assert page.locator("#exited").count() == 0
             assert page.locator("#top").is_visible()

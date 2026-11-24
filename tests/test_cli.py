@@ -12,9 +12,9 @@ from typing import Any, Dict, List
 import pytest
 from liquifai import LiquifyApp
 
-from portaide import AppSpec, serving
-from portaide.cli import add_lifecycle_commands
-from portaide.errors import PortInUseError, ServeError
+from portail import AppSpec, serving
+from portail.cli import add_lifecycle_commands
+from portail.errors import PortInUseError, ServeError
 from tests.cli_output import flat, said, said_all
 from tests.conftest import run
 from tests.demo_cli import DEMO_PORT, DemoWorkspace, app, lifecycle

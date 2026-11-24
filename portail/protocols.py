@@ -1,7 +1,7 @@
 """The shapes a records app speaks, as structural protocols a domain package implements.
 
-A viewer built on portaide is domain-free: it knows viewports and the protocols below, and a domain package (signals,
-images, …) implements them WITHOUT importing the app or portaide — the app depends on the domain packages, and the
+A viewer built on portail is domain-free: it knows viewports and the protocols below, and a domain package (signals,
+images, …) implements them WITHOUT importing the app or portail — the app depends on the domain packages, and the
 reverse import would be a cycle — so the match is purely structural (:class:`typing.Protocol`). Each protocol is
 runtime-checkable: ``isinstance(source, Recordings)`` tells whether an object offers the members (it does not check
 their signatures).
@@ -28,7 +28,7 @@ class Canvas(Protocol):
 
     ``tile`` returns an array: either ``(height, width)`` floats — a SCALAR tile the viewer colormaps (dB for a
     spectrogram) — or ``(height, width, 3)`` uint8 RGB (an image); in both, **row 0 is** ``y0`` (the lowest y — a
-    viewer draws it at the bottom). Extra keyword params are forwarded from the query. Typed ``Any`` so portaide needs
+    viewer draws it at the bottom). Extra keyword params are forwarded from the query. Typed ``Any`` so portail needs
     no array library; a numpy ``ndarray`` is the expected answer.
 
     A canvas MAY also expose, for the viewer: ``params`` — ``{name: {"choices": [...], "default": v}}`` tile

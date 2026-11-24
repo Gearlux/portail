@@ -2,10 +2,10 @@
 
 An app's MCP server (stdio, spawned by the MCP client) is a CLIENT of the app already serving a session: what the
 person dropped, edited and is looking at lives only in that process, so the tools relay to its HTTP API rather than
-rebuilding a workspace. portaide holds the parts that do not depend on what the workspace holds:
+rebuilding a workspace. portail holds the parts that do not depend on what the workspace holds:
 
 * :class:`LLMSafeMCPServer` — an ``MCPServer`` that advertises every tool schema in the subset LLM function-calling
-  APIs accept, and tools ONLY; :func:`make_server` builds one for an :class:`~portaide.spec.AppSpec`;
+  APIs accept, and tools ONLY; :func:`make_server` builds one for an :class:`~portail.spec.AppSpec`;
 * :class:`ServerChoice` — WHICH running server a call talks to: a tool's ``port`` argument names one, else the one
   this connection chose earlier is kept until it dies, else the client's user is ASKED — through the SDK's
   ``Resolve``/``Elicit`` resolvers, so the question rides whichever protocol the client speaks. A client that cannot
@@ -14,7 +14,7 @@ rebuilding a workspace. portaide holds the parts that do not depend on what the 
 * :meth:`ServerChoice.call` — the HTTP relay, every failure IN-BAND (``{"error": ...}``): a tool never raises, and
   with nothing running the error names how to start the app. The MCP process never starts the app itself.
 
-The servers are found by :func:`portaide.serving.running_servers` (the registry plus the default port, each verified
+The servers are found by :func:`portail.serving.running_servers` (the registry plus the default port, each verified
 LIVE by its identity), imported when a call needs it: :func:`_running_servers` and :func:`_request` are the test seams.
 
 NOTE: no ``from __future__ import annotations`` — the SDK introspects live annotation objects to build the tool
@@ -38,8 +38,8 @@ from mcp.server.mcpserver.resolve import Elicit, Resolve
 from mcp.types import Tool as MCPTool
 from pydantic import BaseModel, Field, create_model
 
-from portaide.errors import PortaideError
-from portaide.spec import AppSpec
+from portail.errors import PortailError
+from portail.spec import AppSpec
 
 logger = get_logger(__name__)
 
@@ -59,7 +59,7 @@ _SERVER_FIELD = "server"
 _CONNECT_FIELD = "connect"
 
 
-class RelayError(PortaideError, RuntimeError):
+class RelayError(PortailError, RuntimeError):
     """A tool could not get its answer from a served workspace — reported in-band, never raised out of a tool."""
 
 
@@ -112,11 +112,11 @@ def make_server(spec: AppSpec, instructions: str) -> LLMSafeMCPServer:
 
 
 def _running_servers(spec: AppSpec) -> List[Dict[str, Any]]:
-    """Every server of ``spec``'s app running, lowest port first — :func:`portaide.serving.running_servers`.
+    """Every server of ``spec``'s app running, lowest port first — :func:`portail.serving.running_servers`.
 
     Imported here, at call time: the MCP base needs serving only when a tool is called.
     """
-    from portaide.serving import running_servers
+    from portail.serving import running_servers
 
     return running_servers(spec)
 

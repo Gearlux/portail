@@ -1,4 +1,4 @@
-"""The record filter (``portaide.query``) — one predicate language over record entries.
+"""The record filter (``portail.query``) — one predicate language over record entries.
 
 Every filter a records list needs is the same shape: a test against an entry. That is why there is no per-attribute
 special case anywhere — a class, a filename and a box label all go through the same parse and the same comparison.
@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import pytest
 
-from portaide.query import NEGATED, Filter, QueryError, entry_values, flag_pairs, numeric, parse
+from portail.query import NEGATED, Filter, QueryError, entry_values, flag_pairs, numeric, parse
 
 
 @dataclass

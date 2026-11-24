@@ -28,9 +28,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import pytest
 from liquifai import LiquifyApp
 
-from portaide import AppSpec, serving
-from portaide.cli import add_lifecycle_commands
-from portaide.errors import ServeError
+from portail import AppSpec, serving
+from portail.cli import add_lifecycle_commands
+from portail.errors import ServeError
 from tests.demo_cli import DEMO_PORT, DEMO_SPEC, HELD, KEPT, WORK_FILE, DemoWorkspace, continued, lifecycle, open_type
 
 D = DEMO_PORT
@@ -886,7 +886,7 @@ class TestHooksThatFail:
     """A hook never raises into the lifecycle: one that fails is logged and the stop or start goes on."""
 
     def test_holds_work_and_kept_until_that_fail_read_as_nothing(self, monkeypatch: Any) -> None:
-        from portaide import Hooks
+        from portail import Hooks
 
         def broken(*_: Any) -> Any:
             raise RuntimeError("boom")

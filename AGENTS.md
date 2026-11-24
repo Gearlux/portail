@@ -1,4 +1,4 @@
-# portaide Mandates
+# portail Mandates
 
 Rules only. The reasons are in [`docs/architecture.md`](docs/architecture.md), usage is in the [README](README.md).
 Root `AGENTS.md` rules are not repeated here.
@@ -6,19 +6,19 @@ Root `AGENTS.md` rules are not repeated here.
 ## Current state
 
 - **What it is:** the framework a workspace web app is built on. An app serves ONE object (its workspace) behind a
-  Flask page and is managed from the command line; portaide holds everything that does not depend on what the
+  Flask page and is managed from the command line; portail holds everything that does not depend on what the
   workspace holds: serving (foreground or detached), `stop` / `restart` / `list` by the server's identity, the
   browser opened on an answer, the page's shell (`/api/meta`, ⏻, ↻, every open page told when its server goes), the
   MCP server base, and the filter language a records list is searched with.
-- **The seam** (`portaide/spec.py`): an app supplies an `AppSpec` (its name, CLI module, default port, state folder,
+- **The seam** (`portail/spec.py`): an app supplies an `AppSpec` (its name, CLI module, default port, state folder,
   `Hooks`) and a workspace implementing the `Served` protocol (`host`, `port`, `path`, `template`, `title`,
-  `state_dir()`, `info()`). portaide imports nothing of any app.
+  `state_dir()`, `info()`). portail imports nothing of any app.
 - **Module map:** `spec` · `errors` · `serving` · `cli` · `web` (the shell, `pages`) · `web/static/` (vanilla JS, no
   build step) · `mcp` · `query` · `protocols`.
 
 ## Rules
 
-- **portaide names no app built on it** — not in code, tests or docs (`tests/test_no_private_names.py`). An example
+- **portail names no app built on it** — not in code, tests or docs (`tests/test_no_private_names.py`). An example
   uses the demo app of the tests.
 - **Every message names the app by `AppSpec.name`**, every file by the spec's state folder, every environment
   variable through `AppSpec.env` — never a literal app name.
@@ -60,7 +60,7 @@ Usage: [`docs/serving.md`](docs/serving.md); reasons: [`docs/architecture.md`](d
 - **A never-saved workspace is continued only through `Hooks.continued`**; the record is written by the process that
   binds; an emptied head ends the walk; a saved workspace's port is never taken by a stopped one unless `--port` names
   it. (`tests/test_continue_unsaved.py`) arch §10.
-- **Every address the page uses is RELATIVE**; the shell's files live under `/portaide/`.
+- **Every address the page uses is RELATIVE**; the shell's files live under `/portail/`.
   (`tests/test_shell.py::TestEveryAddressIsRelative`) arch §11.
 - **The suite never reaches a live server**: every request of the lifecycle goes through `serving._urlopen`, which
   `conftest._no_live_http` closes; a test that needs HTTP opens it itself. Real processes in tests run on free ports
@@ -74,9 +74,9 @@ Usage: [`docs/mcp.md`](docs/mcp.md), [`docs/query.md`](docs/query.md); reasons: 
   app, and the process always starts. The user picks the server — `port`, else the SDK's `Resolve`/`Elicit` question,
   never `ctx.elicit()`; an "always" answer is kept per client name in `spec.state_dir() / "mcp-clients.json"`.
   (`tests/test_mcp.py`) arch §13-14.
-- **`mcp` is the `[mcp]` extra:** only `portaide/mcp.py` imports the SDK, nothing in portaide imports `portaide.mcp`,
+- **`mcp` is the `[mcp]` extra:** only `portail/mcp.py` imports the SDK, nothing in portail imports `portail.mcp`,
   and nothing imports `anthropic` / `pydantic_ai`. (`tests/test_llm_free.py`) arch §16.
 - **The filter language has no flags of its own:** an app declares its flag words (`flag_pairs`) mapped to state keys.
   (`tests/test_query.py`) arch §17.
-- **The protocols are structural** (`typing.Protocol`): a domain implements them without importing portaide.
+- **The protocols are structural** (`typing.Protocol`): a domain implements them without importing portail.
   (`tests/test_protocols.py`) arch §18.

@@ -1,6 +1,6 @@
 # Serving, stopping and restarting
 
-What the lifecycle commands an app gets from portaide do, in the words of the person typing them. `<name>` is the
+What the lifecycle commands an app gets from portail do, in the words of the person typing them. `<name>` is the
 app's own command (`AppSpec.name`).
 
 ## Starting

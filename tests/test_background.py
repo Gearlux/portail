@@ -14,8 +14,8 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from portaide import serving
-from portaide.errors import ServeError
+from portail import serving
+from portail.errors import ServeError
 from tests.cli_output import said
 from tests.demo_cli import DEMO_PORT, DEMO_SPEC, DemoWorkspace, app, lifecycle, open_type
 

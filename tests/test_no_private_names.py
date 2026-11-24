@@ -1,8 +1,8 @@
-"""portaide names neither helios nor waivefront, nor an app built on it.
+"""portail names neither helios nor waivefront, nor an app built on it.
 
-portaide serves every domain, where the signal domain (waivefront) and a private bridge (helios) mean nothing
+portail serves every domain, where the signal domain (waivefront) and a private bridge (helios) mean nothing
 (root ``AGENTS.md`` → "General Projects Name Neither Helios Nor Waivefront"). And its docs never name a project that
-depends on it (aisland rules → "Docs Never Name Dependent Projects"): an app built on portaide is named by nothing
+depends on it (aisland rules → "Docs Never Name Dependent Projects"): an app built on portail is named by nothing
 here — not in code, tests or docs — so the framework stays the framework.
 """
 
@@ -20,7 +20,7 @@ ALLOWED: Dict[str, str] = {}
 
 
 def _project_files() -> List[Path]:
-    """Every file git tracks in portaide, and every new one it does not ignore."""
+    """Every file git tracks in portail, and every new one it does not ignore."""
     listed = subprocess.run(
         ["git", "-C", str(PROJECT), "ls-files", "--cached", "--others", "--exclude-standard"],
         capture_output=True,
@@ -30,7 +30,7 @@ def _project_files() -> List[Path]:
     return [PROJECT / name for name in listed if (PROJECT / name).is_file()]
 
 
-def test_no_file_of_portaide_names_helios_waivefront_or_an_app_built_on_it() -> None:
+def test_no_file_of_portail_names_helios_waivefront_or_an_app_built_on_it() -> None:
     this_file = Path(__file__).resolve()
     hits = []
     for path in _project_files():
@@ -40,6 +40,6 @@ def test_no_file_of_portaide_names_helios_waivefront_or_an_app_built_on_it() -> 
         for number, line in enumerate(text.splitlines(), start=1):
             if FORBIDDEN.search(line):
                 hits.append(f"{path.relative_to(PROJECT)}:{number}: {line.strip()}")
-    assert not hits, "portaide names helios, waivefront or an app built on it — say it in general words:\n" + "\n".join(
+    assert not hits, "portail names helios, waivefront or an app built on it — say it in general words:\n" + "\n".join(
         hits
     )

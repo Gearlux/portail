@@ -8,13 +8,13 @@
 * ``GET /api/workspace`` — ``served.info()``, read fresh by the page before it asks about unsaved changes;
 * ``POST /api/exit`` / ``POST /api/restart`` — the page's ⏻ and ↻: the answer goes out FIRST, then the server stops
   itself with the signal ``<name> stop`` sends, or launches ``<name> restart <port> --background``;
-* ``GET /api/events`` — the server-sent event stream every page listens to (``portaide.web.pages``);
+* ``GET /api/events`` — the server-sent event stream every page listens to (``portail.web.pages``);
 * ``POST /api/leaving`` — ``{"why": "restart"}``, what ``<name> restart`` says before its stop;
-* ``GET /portaide/<file>`` — the shell's own scripts and styles (``shell.js``, ``shell.css``, ``server-events.js``),
+* ``GET /portail/<file>`` — the shell's own scripts and styles (``shell.js``, ``shell.css``, ``server-events.js``),
   under a path no app's ``/static`` collides with;
 * ``GET /`` — a minimal page, only when the app routes nothing there yet (a bare app and the tests have a page).
 
-Every address the page uses is RELATIVE (``api/meta``, ``portaide/shell.js``), so a path proxy serving the app under a
+Every address the page uses is RELATIVE (``api/meta``, ``portail/shell.js``), so a path proxy serving the app under a
 prefix keeps working.
 """
 
@@ -23,19 +23,19 @@ from typing import Any, Callable, Optional
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
-from portaide.errors import ServeError
-from portaide.serving import Server
-from portaide.web.pages import channel_of, mount_pages
+from portail.errors import ServeError
+from portail.serving import Server
+from portail.web.pages import channel_of, mount_pages
 
 #: The shell's static files, shipped in the package.
 STATIC = Path(__file__).resolve().parent / "static"
 
-#: Where the Flask app keeps its :class:`~portaide.serving.Server`.
-_EXTENSION = "portaide.server"
+#: Where the Flask app keeps its :class:`~portail.serving.Server`.
+_EXTENSION = "portail.server"
 
 
 def server_of(app: Flask) -> Server:
-    """The :class:`~portaide.serving.Server` :func:`mount_shell` mounted on ``app``."""
+    """The :class:`~portail.serving.Server` :func:`mount_shell` mounted on ``app``."""
     server: Server = app.extensions[_EXTENSION]
     return server
 
@@ -68,23 +68,23 @@ def mount_shell(app: Flask, server: Server, *, index: Optional[bool] = None) -> 
     app.extensions[_EXTENSION] = server
 
     @app.get("/api/meta")
-    def portaide_meta() -> Any:
+    def portail_meta() -> Any:
         return jsonify(server.meta())
 
     @app.get("/api/workspace")
-    def portaide_workspace() -> Any:
+    def portail_workspace() -> Any:
         return jsonify(server.served.info())
 
     @app.post("/api/exit")
-    def portaide_exit() -> Any:
+    def portail_exit() -> Any:
         return _first_then(server.exiting, server.stop_serving)
 
     @app.post("/api/restart")
-    def portaide_restart() -> Any:
+    def portail_restart() -> Any:
         return _first_then(server.restarting, server.restart_serving)
 
     @app.get("/api/events")
-    def portaide_events() -> Any:
+    def portail_events() -> Any:
         # One stream per browser (the page's shared worker), held open until the server goes.
         return Response(
             channel_of(app).stream(),
@@ -93,7 +93,7 @@ def mount_shell(app: Flask, server: Server, *, index: Optional[bool] = None) -> 
         )
 
     @app.post("/api/leaving")
-    def portaide_leaving() -> Any:
+    def portail_leaving() -> Any:
         body = request.get_json(silent=True) or {}
         try:
             channel_of(app).why = str(body.get("why", ""))
@@ -101,8 +101,8 @@ def mount_shell(app: Flask, server: Server, *, index: Optional[bool] = None) -> 
             return _refused(exc)
         return jsonify({"why": channel_of(app).why})
 
-    @app.get("/portaide/<path:name>")
-    def portaide_static(name: str) -> Any:
+    @app.get("/portail/<path:name>")
+    def portail_static(name: str) -> Any:
         response = send_from_directory(str(STATIC), name)
         response.headers["Cache-Control"] = "no-cache"  # a restarted server's code reaches the next reload
         return response
@@ -112,7 +112,7 @@ def mount_shell(app: Flask, server: Server, *, index: Optional[bool] = None) -> 
     if index:
 
         @app.get("/")
-        def portaide_index() -> Any:
+        def portail_index() -> Any:
             return send_from_directory(str(STATIC), "index.html")
 
     return app

@@ -9,7 +9,7 @@ from typing import Any, Iterator, List
 
 import pytest
 
-from portaide import serving
+from portail import serving
 from tests import demo_cli
 
 

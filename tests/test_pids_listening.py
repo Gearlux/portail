@@ -12,8 +12,8 @@ from typing import Any, Dict, List
 
 import pytest
 
-from portaide import serving
-from portaide.errors import ServeError
+from portail import serving
+from portail.errors import ServeError
 
 _SS_LINE = 'LISTEN 0      128        127.0.0.1:8792       0.0.0.0:*    users:(("python",pid=2425975,fd=24))\n'
 _SS_LINE_NO_PID = "LISTEN 0      128        127.0.0.1:8792       0.0.0.0:*\n"

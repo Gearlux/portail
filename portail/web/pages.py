@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional,
 from loggair import get_logger
 
 if TYPE_CHECKING:  # annotation only: the serving module imports this package
-    from portaide.serving import Server
+    from portail.serving import Server
 
 logger = get_logger(__name__)
 
@@ -46,7 +46,7 @@ RECONNECT_MS = 1000
 #: How long a stop waits for each page to have been told — a page that does not read holds it no longer.
 TELL_WAIT_S = 1.0
 #: Where the channel lives on the Flask app.
-_EXTENSION = "portaide.pages"
+_EXTENSION = "portail.pages"
 
 LeavingNote = Dict[str, Union[int, str]]
 

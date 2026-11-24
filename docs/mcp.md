@@ -1,12 +1,12 @@
-# The MCP server base (`portaide.mcp`)
+# The MCP server base (`portail.mcp`)
 
-An app built on portaide can expose its served workspace as tools an AI agent calls over the
+An app built on portail can expose its served workspace as tools an AI agent calls over the
 [Model Context Protocol](https://modelcontextprotocol.io). The MCP server is a separate process the MCP client
 spawns (stdio); it is a **client of the app already serving**: what the person opened, edited and is looking at lives
 only in that process, so every tool relays to the page's HTTP API rather than rebuilding a workspace.
 
-Install the extra: `pip install 'portaide[mcp]'` (MCP Python SDK 2.x). Nothing else in portaide imports
-`portaide.mcp`, so an app without the extra serves, stops and lists as usual.
+Install the extra: `pip install 'portail[mcp]'` (MCP Python SDK 2.x). Nothing else in portail imports
+`portail.mcp`, so an app without the extra serves, stops and lists as usual.
 
 ## What the base gives an app
 
@@ -24,8 +24,8 @@ Install the extra: `pip install 'portaide[mcp]'` (MCP Python SDK 2.x). Nothing e
 ```python
 from typing import Annotated, Any, Dict
 
-from portaide import AppSpec
-from portaide.mcp import ServerChoice, Target, make_server, query_string
+from portail import AppSpec
+from portail.mcp import ServerChoice, Target, make_server, query_string
 
 SPEC = AppSpec(name="demoapp", cli_module="demoapp.cli")
 
@@ -88,7 +88,7 @@ starts with none.
 
 ## Testing an app's tools
 
-`portaide.mcp._running_servers(spec)` (server discovery) and `portaide.mcp._request(server, method, path, body, *,
+`portail.mcp._running_servers(spec)` (server discovery) and `portail.mcp._request(server, method, path, body, *,
 app, timeout)` (the HTTP relay) are the seams: monkeypatch both, then call the tools through the SDK's in-process
-`mcp.client.Client(server, elicitation_callback=...)` so the question travels as it does for a real client. portaide's
+`mcp.client.Client(server, elicitation_callback=...)` so the question travels as it does for a real client. portail's
 own `tests/test_mcp.py` does exactly this with a demo app.

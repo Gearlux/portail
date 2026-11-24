@@ -11,8 +11,8 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import pytest
 
-from portaide.serving import Server
-from portaide.spec import Served
+from portail.serving import Server
+from portail.spec import Served
 from tests.demo_cli import DEMO_SPEC
 
 
@@ -21,7 +21,7 @@ def serving_app(workspace: Served, port: int = 0) -> Iterator[Tuple[Any, Any, Se
     """The workspace on a real socket with its app and server — the browser needs HTTP, not a test client."""
     from werkzeug.serving import make_server
 
-    from portaide.web import create_shell
+    from portail.web import create_shell
 
     server = Server(DEMO_SPEC, workspace)
     app = create_shell(server)
@@ -44,8 +44,8 @@ def served(workspace: Served) -> Iterator[str]:
 
 #: What "ready" means, as the atoms the wait is built from AND the names a failure reports — one list.
 _READY = [
-    ("the shell (window.Portaide)", "window.Portaide"),
-    ("the server's meta (Portaide.meta.workspace)", "window.Portaide && Portaide.meta && Portaide.meta.workspace"),
+    ("the shell (window.Portail)", "window.Portail"),
+    ("the server's meta (Portail.meta.workspace)", "window.Portail && Portail.meta && Portail.meta.workspace"),
     ("the buttons (#ws-exit)", "document.getElementById('ws-exit')"),
 ]
 _READY_EXPR = "() => " + " && ".join(f"({fragment})" for _, fragment in _READY)

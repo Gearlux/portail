@@ -23,10 +23,10 @@ from typing import Any, Callable, Dict, Iterator, List, Optional
 
 import pytest
 
-from portaide import serving
-from portaide.errors import ServeError
-from portaide.serving import Server
-from portaide.web import create_shell
+from portail import serving
+from portail.errors import ServeError
+from portail.serving import Server
+from portail.web import create_shell
 from tests.browsers import answer_confirm, chromium_page, ready, served
 from tests.demo_cli import DEMO_SPEC, DemoWorkspace
 from tests.test_exit import CHILD, child_environment, free_port
@@ -252,7 +252,7 @@ class TestTheRestartButton:
                 _another_server_answers(monkeypatch)
             ready(page)
             assert page.evaluate("() => window.beforeRestart") is None, "the tab was reloaded"
-            assert page.evaluate("() => Portaide.meta.pid") == 4242
+            assert page.evaluate("() => Portail.meta.pid") == 4242
 
     def test_a_server_that_never_comes_back_is_said_with_the_restarts_log(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -261,7 +261,7 @@ class TestTheRestartButton:
         monkeypatch.setattr(Server, "_ends_on_sigterm", True)
         monkeypatch.setattr(Server, "restart_serving", lambda self: None)  # the same process keeps answering
         with served(DemoWorkspace()) as url, chromium_page(url) as page:
-            page.evaluate("() => { Portaide.RESTART_WAIT_MS = 1000; }")
+            page.evaluate("() => { Portail.RESTART_WAIT_MS = 1000; }")
             page.click("#ws-restart")
             page.wait_for_selector("#restarting.failed")
             text = page.inner_text("#restarting")
@@ -303,7 +303,7 @@ class TestTheRestartButton:
     def test_a_server_inside_another_program_says_so_and_the_page_stays(self) -> None:
         with served(DemoWorkspace()) as url, chromium_page(url) as page:
             page.click("#ws-restart")
-            page.wait_for_selector(".portaide-toast.error")
-            assert REFUSAL in page.inner_text(".portaide-toast.error")
+            page.wait_for_selector(".portail-toast.error")
+            assert REFUSAL in page.inner_text(".portail-toast.error")
             assert page.locator("#restarting").count() == 0
             assert page.locator("#top").is_visible()

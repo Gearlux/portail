@@ -1,4 +1,4 @@
-# portaide — architecture
+# portail — architecture
 
 Decision records, each Context → Decision → Consequences: serving, the lifecycle commands and the page's shell
 (§1-12), the MCP server base (§13-16), the filter language (§17) and the viewer's protocols (§18).
@@ -7,10 +7,10 @@ Decision records, each Context → Decision → Consequences: serving, the lifec
 
 **Context.** The lifecycle of a workspace web app — serve, find again, stop, restart, tell its pages — is the same
 for every app; what the workspace holds is not.
-**Decision.** An app hands portaide an `AppSpec` (its name, CLI module, default address, state folder, hooks) and a
+**Decision.** An app hands portail an `AppSpec` (its name, CLI module, default address, state folder, hooks) and a
 workspace implementing `Served` (`host`, `port`, `path`, `template`, `title`, `state_dir()`, `info()`). Every message
 says `spec.name`, every file lives in `spec.state_dir()`, every environment variable is `spec.env(word)`.
-**Consequences.** portaide imports nothing of an app (`tests/test_no_private_names.py`); the suite proves it on a
+**Consequences.** portail imports nothing of an app (`tests/test_no_private_names.py`); the suite proves it on a
 demo app of its own (`tests/demo_cli.py`).
 
 ## 2. A server is found by its identity, from its LIVE answer
@@ -123,7 +123,7 @@ document the app cannot load, are the app's (`serving.continue_command` names th
 ## 11. Every address the page uses is relative
 
 **Context.** A path proxy serves an app under a prefix (`/proxy/8710/`); an absolute `/api/meta` leaves it.
-**Decision.** The shell's files are served under `/portaide/` (never an app's `/static`), and `shell.js` resolves every
+**Decision.** The shell's files are served under `/portail/` (never an app's `/static`), and `shell.js` resolves every
 address against its own location, one level up; the worker gets the stream's address from the page.
 **Consequences.** Pins: `tests/test_shell.py::TestEveryAddressIsRelative`.
 
@@ -131,7 +131,7 @@ address against its own location, one level up; the worker gets the stream's add
 
 **Context.** Measured: `stop --port 8799` — an option `stop` did not have — fell through to the config overrides and
 stopped the only running server.
-**Decision.** The app builds its CLI with `LiquifyApp(strict_flags=True)` (its choice; portaide's docs recommend it):
+**Decision.** The app builds its CLI with `LiquifyApp(strict_flags=True)` (its choice; portail's docs recommend it):
 an undeclared option is refused naming the closest one.
 **Consequences.** Pins: `tests/test_cli.py::TestAnUnknownOptionIsRefused`.
 
@@ -140,9 +140,9 @@ an undeclared option is refused naming the closest one.
 **Context.** What an app's person opened, edited and is looking at lives only in the serving process. An MCP server
 that rebuilt the workspace from its file would answer about a different workspace than the one on screen.
 
-**Decision.** `portaide.mcp` is a base for an MCP server that RELAYS to the page's HTTP API (`ServerChoice.call`).
+**Decision.** `portail.mcp` is a base for an MCP server that RELAYS to the page's HTTP API (`ServerChoice.call`).
 The process always starts, never starts the app, and answers every failure in-band (`{"error": ...}`); with nothing
-running the error names the app's start command (`start_hint`). Servers are found by `portaide.serving.running_servers`
+running the error names the app's start command (`start_hint`). Servers are found by `portail.serving.running_servers`
 — the same identity-based discovery `stop` / `restart` / `list` use — imported at call time.
 
 **Consequences.** A tool is a few lines: a route and its arguments. A tool reaches a client only when the client
@@ -182,13 +182,13 @@ copies in the workspace's MCP servers; hoisting it into liquifai is tracked in `
 
 ## 16. `mcp` is an optional extra
 
-**Context.** Most uses of portaide (serving, the lifecycle commands, the page's shell) need no MCP SDK, and the SDK
+**Context.** Most uses of portail (serving, the lifecycle commands, the page's shell) need no MCP SDK, and the SDK
 pins a major version that has moved module paths before.
 
-**Decision.** `portaide[mcp]` carries `mcp>=2.0`; `portaide/mcp.py` imports it at module scope and nothing else in
-portaide imports `portaide.mcp`. portaide imports no LLM package at all (`tests/test_llm_free.py`).
+**Decision.** `portail[mcp]` carries `mcp>=2.0`; `portail/mcp.py` imports it at module scope and nothing else in
+portail imports `portail.mcp`. portail imports no LLM package at all (`tests/test_llm_free.py`).
 
-**Consequences.** An app without the extra never loads the SDK; an app with an MCP server imports `portaide.mcp` from
+**Consequences.** An app without the extra never loads the SDK; an app with an MCP server imports `portail.mcp` from
 its own server module only.
 
 ## 17. One filter language, with the app's flags declared
@@ -197,9 +197,9 @@ its own server module only.
 `class != @pred`) and by state the app keeps beside the record (whether the person edited it). The entries are typed
 items of whatever data library the app uses; the state words differ per app.
 
-**Decision.** `portaide.query.parse(text, aliases=None, flags=None)` reads one grammar into a `Filter` applied to
+**Decision.** `portail.query.parse(text, aliases=None, flags=None)` reads one grammar into a `Filter` applied to
 `(record, state)`. Entries are unwrapped duck-typed (`values` / `labels`, else `value`, else the entry:
-`entry_values`), so portaide depends on no data library. FLAGS are a parameter: a mapping of word → state key,
+`entry_values`), so portail depends on no data library. FLAGS are a parameter: a mapping of word → state key,
 `!key` for false (`flag_pairs` writes both words of a key); the default declares none, and an undeclared bare word is
 a NAME term (`state["name"]`). `numeric` is public so an app decides numeric-ness by the comparison's own rule.
 
@@ -212,8 +212,8 @@ what the app writes back. A declaration naming no state key is refused at parse 
 **Context.** A records viewer draws canvases of recordings from collections opened from paths; the domain packages
 that provide them must not import the app (the app depends on them).
 
-**Decision.** `portaide.protocols` defines `Extent` (a `{"x0","x1","y0","y1"}` dict) and the runtime-checkable
-`Canvas`, `Recording`, `Recordings` and `Opener` protocols. `Canvas.tile` is typed `Any` so portaide needs no array
+**Decision.** `portail.protocols` defines `Extent` (a `{"x0","x1","y0","y1"}` dict) and the runtime-checkable
+`Canvas`, `Recording`, `Recordings` and `Opener` protocols. `Canvas.tile` is typed `Any` so portail needs no array
 library.
 
 **Consequences.** A domain package conforms by shape alone; `isinstance` checks member presence, never signatures, so

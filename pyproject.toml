@@ -3,7 +3,7 @@ requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "portaide"
+name = "portail"
 version = "0.1.0a1"
 description = "A framework for workspace web apps: serving, stop/restart/list, page events, the MCP server base and a filter language."
 readme = "README.md"
@@ -27,15 +27,15 @@ dependencies = [
     "loggair>=0.2.0",
     # The MCP base hands every tool schema to `confluid.sanitize_schema`.
     "confluid>=0.4.0",
-    # Imported at MODULE scope by portaide.web: the shell is a Flask app.
+    # Imported at MODULE scope by portail.web: the shell is a Flask app.
     "flask>=3.0",
-    # Imported at MODULE scope by portaide.serving: a workspace file's host and port are read tag-blind with PyYAML.
+    # Imported at MODULE scope by portail.serving: a workspace file's host and port are read tag-blind with PyYAML.
     "pyyaml",
 ]
 requires-python = ">=3.12"
 
 [project.optional-dependencies]
-# The MCP server base (portaide.mcp). SDK 2.x: mcp.server.mcpserver.MCPServer — the 1.x module path does not exist
+# The MCP server base (portail.mcp). SDK 2.x: mcp.server.mcpserver.MCPServer — the 1.x module path does not exist
 # in 2.x and vice versa, hence the floor.
 mcp = ["mcp>=2.0"]
 dev = [
@@ -52,16 +52,16 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Gearlux/portaide"
-Repository = "https://github.com/Gearlux/portaide.git"
-Issues = "https://github.com/Gearlux/portaide/issues"
+Homepage = "https://github.com/Gearlux/portail"
+Repository = "https://github.com/Gearlux/portail.git"
+Issues = "https://github.com/Gearlux/portail/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["portaide*"]
+include = ["portail*"]
 
 [tool.setuptools.package-data]
-portaide = ["py.typed", "web/static/*"]
+portail = ["py.typed", "web/static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -72,7 +72,7 @@ addopts = "--cov-branch -m 'not slow'"
 markers = ["slow: left out of the fast run, run by CI's slow leg"]
 
 [tool.coverage.run]
-source = ["portaide"]
+source = ["portail"]
 branch = true
 
 [tool.coverage.report]
