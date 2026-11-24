@@ -18,7 +18,7 @@ Every message names the app by ``spec.name``; the commands' help is written with
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Collection, Dict, List, Optional
 
 import yaml
 from liquifai import LiquifyApp
@@ -62,7 +62,7 @@ class Lifecycle:
         self,
         spec: AppSpec,
         *,
-        open_file: Callable[[str], Served],
+        open_file: Callable[..., Served],
         open_empty: Callable[[], Served],
         open_type: Optional[Callable[[str], Served]] = None,
         type_names: Optional[Callable[[], List[str]]] = None,
@@ -81,20 +81,28 @@ class Lifecycle:
         """Every type ``<name> workspace <type>`` opens — none when the app opens no types."""
         return sorted(self._type_names()) if self._open_type is not None else []
 
-    def open_file(self, path: str) -> Served:
-        """The workspace file ``path``, opened by the app.
+    def is_workspace(self, path: str) -> bool:
+        """Whether ``path`` is there as what the app's workspace is: a file, or a folder (``AppSpec.workspace``)."""
+        return Path(path).is_dir() if self.spec.workspace == "folder" else Path(path).is_file()
+
+    def open_file(self, path: str, options: Optional[Dict[str, str]] = None) -> Served:
+        """The workspace ``path`` — a file, or a folder for an app that serves one — opened by the app.
+
+        Args:
+            path: The workspace's file or folder.
+            options: The app's own serving options, handed to its ``open_file`` as keyword arguments.
 
         Raises:
-            ConfigNotFoundError: the file does not exist (one clean CLI line) — a bare type name points at
+            ConfigNotFoundError: it does not exist (one clean CLI line) — a bare type name points at
                 ``<name> workspace <type>`` instead.
         """
         target = Path(path)
-        if not target.is_file():
+        if not self.is_workspace(path):
             hint = (
                 f" — for the type workspace use: {self.spec.name} workspace {path}" if path in self.type_names() else ""
             )
-            raise ConfigNotFoundError(f"workspace file {target} does not exist{hint}")
-        return self._open_file(str(target.resolve()))
+            raise ConfigNotFoundError(f"workspace {self.spec.workspace} {target} does not exist{hint}")
+        return self._open_file(str(target.resolve()), **(options or {}))
 
     def open_type(self, name: str) -> Served:
         """The type workspace ``name``, opened by the app.
@@ -132,19 +140,22 @@ class Lifecycle:
         port: Any = 0,
         background: bool = False,
         browser: str = "new",
+        options: Optional[Dict[str, str]] = None,
     ) -> None:
-        """``<name> [workspace.yaml]`` — serve an empty workspace or a workspace file."""
+        """``<name> [workspace.yaml]`` — serve an empty workspace or a workspace file (``options``: the app's own
+        serving options, for the workspace named)."""
         choice = serving.browser_choice(browser)
         handed = serving.handed_down_folder(self.spec, self.spec.name)
         if workspace:
-            target = self.open_file(workspace)
+            target = self.open_file(workspace, options)
         elif handed is not None:
             target = self.continued(handed, "")
         else:
             serving.warn_about_work_left_behind(self.spec)
             target = self.open_empty()
         serving.apply_port(target, port)
-        serving.remember(self.spec, f"file:{target.path}" if workspace else "empty")
+        # What the app opens with nothing named may be a workspace on disk too (the folder the command is typed in).
+        serving.remember(self.spec, f"file:{target.path}" if target.path else "empty")
         self.serve(target, auto_port=auto_port, background=background, browser=choice)
 
     def workspace(
@@ -181,7 +192,7 @@ class Lifecycle:
             self._stop_by_port(port, servers)
             return
         if workspace:
-            if Path(workspace).is_file():
+            if self.is_workspace(workspace):
                 identity, address = str(Path(workspace).resolve()), self._ports_only(workspace)
             elif workspace in self.type_names():
                 identity, address = f"type:{workspace}", self._default_address()
@@ -229,8 +240,16 @@ class Lifecycle:
         address, identity = self._last_served()
         serving.stop_both(spec, address, expect=identity)
 
-    def restart(self, target: str = "", port: Any = 0, background: bool = False, browser: str = "never") -> None:
-        """``<name> restart [target]`` — stop the server and serve the workspace again."""
+    def restart(
+        self,
+        target: str = "",
+        port: Any = 0,
+        background: bool = False,
+        browser: str = "never",
+        options: Optional[Dict[str, str]] = None,
+    ) -> None:
+        """``<name> restart [target]`` — stop the server and serve the workspace again (``options``: the app's own
+        serving options; none named → the ones the running server has)."""
         choice = serving.browser_choice(browser)
         continuing = self._continuation(target)
         if continuing is not None:
@@ -238,7 +257,7 @@ class Lifecycle:
             again = f"{self.spec.name} restart" + (f" {target}" if target and self._port_named(target) is None else "")
             self._restart_continuing(continuing, port, background, again, choice)
             return
-        resolved = self._resolve_target(target)
+        resolved = self._resolve_target(target, options)
         # A port target names the server ON it: that one is stopped even when --port moves it. Any other target is
         # stopped where it will serve.
         named_by_port = bool(target) and self._port_named(target) is not None
@@ -275,7 +294,7 @@ class Lifecycle:
         file or type of that spelling is checked FIRST, so a workspace file literally called ``8790`` stays reachable.
         """
         text = str(target)
-        if not (text.isascii() and text.isdigit()) or Path(text).is_file() or text in self.type_names():
+        if not (text.isascii() and text.isdigit()) or self.is_workspace(text) or text in self.type_names():
             return None
         number = int(text)
         if not 1 <= number <= 65535:
@@ -303,6 +322,8 @@ class Lifecycle:
 
         _TagBlind.add_multi_constructor("", _any_tag)
         address = self._default_address()
+        if self.spec.workspace == "folder":  # a folder holds no address: nothing is read from it
+            return address
         try:
             document = yaml.load(Path(path).read_text(), Loader=_TagBlind) or {}
             fields = document.get(self.spec.workspace_key) or {}
@@ -319,7 +340,7 @@ class Lifecycle:
         since) leaves the default address and no identity (``""``).
         """
         what = serving.last_spec(self.spec)
-        if what.startswith("file:") and Path(what[5:]).is_file():
+        if what.startswith("file:") and self.is_workspace(what[5:]):
             return self._ports_only(what[5:]), str(Path(what[5:]).resolve())
         if what.startswith("type:") and what[5:] in self.type_names():
             opened = self.open_type(what[5:])
@@ -338,18 +359,26 @@ class Lifecycle:
             return
         serving.stop_both(self.spec, Address(self.spec.default_host, port))
 
-    def _from_spec(self, what: str) -> Served:
+    def _running_options(self, path: str) -> Dict[str, str]:
+        """The serving options the server of the workspace ``path`` runs with — none when none runs."""
+        identity = str(Path(path).resolve())
+        for server in serving.running_servers(self.spec):
+            if server["identity"] == identity:
+                return dict(server.get("options") or {})
+        return {}
+
+    def _from_spec(self, what: str, options: Optional[Dict[str, str]] = None) -> Served:
         """The remembered workspace, announced — a bare restart means "what I worked on"."""
         if what.startswith("file:"):
             print(f"restarting {what[5:]}")
-            return self.open_file(what[5:])
+            return self.open_file(what[5:], options or self._running_options(what[5:]))
         if what.startswith("type:"):
             print(f"restarting the {what[5:]} type workspace")
             return self.open_type(what[5:])
         print("restarting an empty workspace (nothing was served before)")
         return self.open_empty()
 
-    def _from_port(self, port: int) -> Served:
+    def _from_port(self, port: int, options: Optional[Dict[str, str]] = None) -> Served:
         """``restart <port>``: the workspace serving on that port, to be served there again.
 
         Opened from what the LIVE server says it serves — its file, its type, or nothing (an empty workspace) — and it
@@ -371,7 +400,7 @@ class Lifecycle:
                 + (f"running: {running}" if running else f"no {self.spec.name} is running")
             )
         if server["path"]:
-            resolved = self.open_file(server["path"])
+            resolved = self.open_file(server["path"], options or dict(server.get("options") or {}))
         elif server["template"]:
             resolved = self.open_type(server["template"])
         else:
@@ -380,22 +409,23 @@ class Lifecycle:
         print(f"restarting {server['label']} (port {port})")
         return resolved
 
-    def _resolve_target(self, target: str) -> Served:
+    def _resolve_target(self, target: str, options: Optional[Dict[str, str]] = None) -> Served:
         """``restart [target]``: bare → the LAST served workspace; a file → that workspace; a type name → that type
         workspace; a port → the workspace serving on it (:meth:`_from_port`)."""
         if not target:
-            return self._from_spec(serving.last_spec(self.spec))
+            return self._from_spec(serving.last_spec(self.spec), options)
         port = self._port_named(target)
         if port is not None:
-            return self._from_port(port)
-        if Path(target).is_file():
-            return self.open_file(target)
+            return self._from_port(port, options)
+        if self.is_workspace(target):
+            return self.open_file(target, options or self._running_options(target))
         if target in self.type_names():
             return self.open_type(target)
         names = self.type_names()
+        if not names:
+            raise ConfigNotFoundError(f"{target!r} is not a workspace {self.spec.workspace}")
         raise ConfigNotFoundError(
-            f"{target!r} is neither a workspace file nor a type workspace"
-            + (f" (known: {', '.join(names)})" if names else "")
+            f"{target!r} is neither a workspace {self.spec.workspace} nor a type workspace (known: {', '.join(names)})"
         )
 
     # -- continuing a never-saved workspace -----------------------------------------------------------------------
@@ -421,7 +451,7 @@ class Lifecycle:
             return None
         port = self._port_named(target) if target else None
         what = serving.last_spec(spec)
-        if target and port is None and (Path(target).is_file() or target not in self.type_names()):
+        if target and port is None and (self.is_workspace(target) or target not in self.type_names()):
             return None
         if not target and not serving.never_saved_spec(what):
             return None
@@ -611,11 +641,12 @@ def add_lifecycle_commands(
     app: LiquifyApp,
     spec: AppSpec,
     *,
-    open_file: Callable[[str], Served],
+    open_file: Callable[..., Served],
     open_empty: Callable[[], Served],
     open_type: Optional[Callable[[str], Served]] = None,
     type_names: Optional[Callable[[], List[str]]] = None,
     create_app: Optional[Callable[[serving.Server], "Flask"]] = None,
+    commands: Optional[Collection[str]] = None,
 ) -> Lifecycle:
     """Register the lifecycle commands on the app's own liquifai CLI, and answer the :class:`Lifecycle` behind them.
 
@@ -635,7 +666,11 @@ def add_lifecycle_commands(
         type_names: Every type ``open_type`` opens (TAB completions too).
         create_app: The app's Flask app for a :class:`~portail.serving.Server` (the shell mounted in it); unset → the
             bare shell.
+        commands: The commands to register, by name — unset: all of them. An app whose serving commands take options
+            of its own registers those itself (calling :meth:`Lifecycle.open` / :meth:`Lifecycle.restart` with
+            ``options=``) and asks for the rest: ``commands=("stop", "list")``.
     """
+    wanted = set(commands) if commands is not None else {"open", "workspace", "stop", "restart", "list"}
     life = Lifecycle(
         spec,
         open_file=open_file,
@@ -656,9 +691,10 @@ def add_lifecycle_commands(
         life.open(workspace, auto_port=auto_port, port=port, background=background, browser=browser)
 
     open_.__doc__ = _OPEN_DOC.format(**words)
-    app.command(name="open", default=True, positionals=["workspace"], short={"b": "background"})(open_)
+    if "open" in wanted:
+        app.command(name="open", default=True, positionals=["workspace"], short={"b": "background"})(open_)
 
-    if open_type is not None:
+    if open_type is not None and "workspace" in wanted:
 
         def workspace(
             type: str = "",
@@ -678,21 +714,24 @@ def add_lifecycle_commands(
         life.stop(workspace, all=all)
 
     stop.__doc__ = _STOP_DOC.format(**words)
-    app.command(name="stop", positionals=["workspace"])(stop)
+    if "stop" in wanted:
+        app.command(name="stop", positionals=["workspace"])(stop)
 
     def restart(target: str = "", port: int = 0, background: bool = False, browser: BrowserChoice = "never") -> None:
         life.restart(target, port=port, background=background, browser=browser)
 
     restart.__doc__ = _RESTART_DOC.format(**words)
-    app.command(
-        name="restart", positionals=["target"], completions={"target": life.type_names}, short={"b": "background"}
-    )(restart)
+    if "restart" in wanted:
+        app.command(
+            name="restart", positionals=["target"], completions={"target": life.type_names}, short={"b": "background"}
+        )(restart)
 
     def list_() -> None:
         life.list()
 
     list_.__doc__ = _LIST_DOC.format(**words)
-    app.command(name="list")(list_)
+    if "list" in wanted:
+        app.command(name="list")(list_)
     return life
 
 

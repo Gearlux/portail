@@ -299,7 +299,7 @@ class TestAnExplicitPort:
     def test_restart_takes_a_port(self, monkeypatch: Any) -> None:
         served: List[int] = []
         target = DemoWorkspace()
-        monkeypatch.setattr(lifecycle, "_resolve_target", lambda what: target)
+        monkeypatch.setattr(lifecycle, "_resolve_target", lambda what, options=None: target)
         monkeypatch.setattr(serving, "stop_both", lambda *a, **kwargs: None)
         monkeypatch.setattr(lifecycle, "serve", lambda resolved, **kwargs: served.append(resolved.port))
         lifecycle.restart("", "8891")
@@ -308,7 +308,7 @@ class TestAnExplicitPort:
     def test_a_restart_with_port_stops_where_it_will_serve(self, monkeypatch: Any) -> None:
         """A file or type restarted onto another port: what serves THAT port is what the start would collide with."""
         stopped: List[int] = []
-        monkeypatch.setattr(lifecycle, "_resolve_target", lambda what: DemoWorkspace())
+        monkeypatch.setattr(lifecycle, "_resolve_target", lambda what, options=None: DemoWorkspace())
         monkeypatch.setattr(serving, "stop_both", lambda spec, address, **kwargs: stopped.append(address.port))
         monkeypatch.setattr(lifecycle, "serve", lambda resolved, **kwargs: None)
         lifecycle.restart("detection", 8891)

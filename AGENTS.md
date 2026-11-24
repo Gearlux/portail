@@ -11,8 +11,9 @@ Root `AGENTS.md` rules are not repeated here.
   browser opened on an answer, the page's shell (`/api/meta`, ⏻, ↻, every open page told when its server goes), the
   MCP server base, and the filter language a records list is searched with.
 - **The seam** (`portail/spec.py`): an app supplies an `AppSpec` (its name, CLI module, default port, state folder,
-  `Hooks`) and a workspace implementing the `Served` protocol (`host`, `port`, `path`, `template`, `title`,
-  `state_dir()`, `info()`). portail imports nothing of any app.
+  whether its workspace is a `"file"` or a `"folder"`, `Hooks`) and a workspace implementing the `Served` protocol
+  (`host`, `port`, `path`, `template`, `title`, `state_dir()`, `info()`; optionally `options`, the app's own serving
+  options). portail imports nothing of any app.
 - **Module map:** `spec` · `errors` · `serving` · `cli` · `web` (the shell, `pages`) · `web/static/` (vanilla JS, no
   build step) · `mcp` · `query` · `protocols`.
 
@@ -60,6 +61,13 @@ Usage: [`docs/serving.md`](docs/serving.md); reasons: [`docs/architecture.md`](d
 - **A never-saved workspace is continued only through `Hooks.continued`**; the record is written by the process that
   binds; an emptied head ends the walk; a saved workspace's port is never taken by a stopped one unless `--port` names
   it. (`tests/test_continue_unsaved.py`) arch §10.
+- **"Is this a workspace on disk" is asked in ONE place** (`Lifecycle.is_workspace`: a file, or a folder for
+  `AppSpec(workspace="folder")`) — never `Path.is_file()` in a command. Nothing is read from a folder workspace before
+  it is served. A workspace's `options` ride into a `--background` child (`serving.background_command`) and a restart
+  (the named ones, else the running server's); an app without options gets the argv it always got.
+  (`tests/test_folder_workspace.py`) arch §11b.
+- **The shell adds `/api/workspace` only when the app routes none**; `/api/meta` is always the shell's.
+  (`tests/test_folder_workspace.py::TestAnAppsOwnWorkspaceRoute`) arch §11a.
 - **Every address the page uses is RELATIVE**; the shell's files live under `/portail/`.
   (`tests/test_shell.py::TestEveryAddressIsRelative`) arch §11.
 - **The suite never reaches a live server**: every request of the lifecycle goes through `serving._urlopen`, which

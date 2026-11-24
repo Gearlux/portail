@@ -71,9 +71,12 @@ def mount_shell(app: Flask, server: Server, *, index: Optional[bool] = None) -> 
     def portail_meta() -> Any:
         return jsonify(server.meta())
 
-    @app.get("/api/workspace")
-    def portail_workspace() -> Any:
-        return jsonify(server.served.info())
+    # An app that answers ``/api/workspace`` itself keeps it (mount the shell AFTER the app's own routes).
+    if not any(rule.rule == "/api/workspace" for rule in app.url_map.iter_rules()):
+
+        @app.get("/api/workspace")
+        def portail_workspace() -> Any:
+            return jsonify(server.served.info())
 
     @app.post("/api/exit")
     def portail_exit() -> Any:

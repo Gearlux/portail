@@ -264,7 +264,8 @@ def server_entry(host: str, port: int, meta: Dict[str, Any]) -> Dict[str, Any]:
     """One discovered server, its identity taken from its LIVE meta answer.
 
     Keys: ``host``, ``port``, ``path``, ``template``, ``identity``, ``label``, ``state_dir`` (the folder it works out
-    of — a never-saved workspace's is what a restart continues) and ``pid`` (the serving process, 0 when unsaid).
+    of — a never-saved workspace's is what a restart continues), ``pid`` (the serving process, 0 when unsaid) and
+    ``options`` (the app's own serving options it runs with).
     """
     info = meta.get("workspace") or {}
     path, template = str(info.get("path") or ""), str(info.get("template") or "")
@@ -281,6 +282,7 @@ def server_entry(host: str, port: int, meta: Dict[str, Any]) -> Dict[str, Any]:
         "label": label_of(path, template),
         "state_dir": str(info.get("state_dir") or ""),
         "pid": pid,
+        "options": as_options(info.get("options")),
     }
 
 
@@ -908,6 +910,24 @@ def prepare(spec: AppSpec, target: Served) -> None:
 # -- starting a server from the command line --------------------------------------------------------------------------
 
 
+def as_options(value: Any) -> Dict[str, str]:  # what a workspace or a live answer holds under ``options``
+    """``value`` as serving options — text keys and text values; anything that is no mapping is no options."""
+    return {str(key): str(item) for key, item in value.items()} if isinstance(value, dict) else {}
+
+
+def options_of(target: Served) -> Dict[str, str]:
+    """The app's own serving options a workspace carries (its ``options``) — none when it carries none."""
+    return as_options(getattr(target, "options", None))
+
+
+def option_words(options: Dict[str, str]) -> List[str]:
+    """The options as command-line words: ``{"notes_dir": "/n"}`` → ``["--notes-dir", "/n"]``."""
+    words: List[str] = []
+    for key, value in options.items():
+        words += ["--" + key.replace("_", "-"), value]
+    return words
+
+
 def background_command(spec: AppSpec, target: Served) -> List[str]:
     """The argv that serves THIS workspace again, in a child process.
 
@@ -924,7 +944,7 @@ def background_command(spec: AppSpec, target: Served) -> List[str]:
         argv += ["open", target.path]
     else:
         argv += ["open"]
-    return argv + ["--port", str(target.port), "--browser", "never"]
+    return argv + ["--port", str(target.port), "--browser", "never"] + option_words(options_of(target))
 
 
 def _where(target: Served) -> str:
@@ -1262,7 +1282,8 @@ class Server:
             if running is None:
                 raise PortInUseError(
                     f"port {served.port} on {served.host} is in use{port_holder(served.port)} — "
-                    f"set port: in the workspace (or stop that process)"
+                    + ("name another with --port" if self.spec.workspace == "folder" else "set port: in the workspace")
+                    + " (or stop that process)"
                 )
             print(self.already_running_report(running))
             return

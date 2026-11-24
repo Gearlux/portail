@@ -7,6 +7,11 @@ app's own command (`AppSpec.name`).
 
 - `<name>` serves an EMPTY workspace; `<name> <workspace.yaml>` opens a saved one; `<name> workspace <type>` opens a
   NEW workspace of a type (when the app has types).
+- An app whose workspace is a FOLDER takes `<name> <folder>`; what a bare `<name>` serves is the app's choice (the
+  folder it is typed in, say), and a bare `restart` serves it again. `stop` and `restart` name such a server by its
+  folder or its port.
+- An app may add serving options of its own to `open` and `restart`. A background start and a restart serve with
+  them again; a restart that names one replaces it.
 - The command prints nothing alarming when the app already answers on the address: it says
   `<name> is already running — serving …`, the URL alone on its line (so a terminal makes it clickable), and how to
   stop or restart it.

@@ -127,6 +127,7 @@ class TestDiscovery:
             "label": "the detection type workspace",
             "state_dir": "/tmp/f",
             "pid": 4242,
+            "options": {},
         }
 
     def test_the_lowest_port_comes_first(self, state: Path, monkeypatch: Any) -> None:

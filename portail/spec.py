@@ -7,7 +7,7 @@ goes. Everything it needs to do so is here.
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Protocol, runtime_checkable
+from typing import Any, Callable, Dict, Literal, Optional, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -20,6 +20,10 @@ class Served(Protocol):
         path: The workspace's file, absolute — ``""`` for a workspace never saved.
         template: The TYPE the workspace was opened from (``<app> workspace <type>``) — ``""`` for none.
         title: What the page and every listing call it.
+
+    A workspace MAY also carry ``options``, a ``Dict[str, str]`` of the app's own serving options (``{"notes_dir":
+    "/n"}``): each is handed to the command that serves it again (``--notes-dir /n``, a ``--background`` child), and
+    answered under ``options`` by :meth:`info` so a restart serves with what the running server has.
     """
 
     host: str
@@ -86,6 +90,8 @@ class AppSpec:
         cli_module: The module ``python -m`` runs to start the app again (a ``--background`` child, a ↻ restart).
         default_port: The port a workspace serves on unless its file or ``--port`` names another.
         default_host: The address a workspace serves on unless its file names another.
+        workspace: What a workspace is on disk — a ``"file"`` (a workspace file, the default) or a ``"folder"``
+            (the app serves a folder; there is no workspace file, and nothing is read from it before serving).
         workspace_key: The top-level key of a workspace file that holds the workspace (read tag-blind for its port).
         state_folder: The per-user state folder; unset → ``~/.<name>``, read when asked (a test's ``HOME`` holds).
         hooks: The app's :class:`Hooks`.
@@ -95,6 +101,7 @@ class AppSpec:
     cli_module: str
     default_port: int = 8787
     default_host: str = "127.0.0.1"
+    workspace: Literal["file", "folder"] = "file"
     workspace_key: str = "workspace"
     state_folder: Optional[Path] = None
     hooks: Hooks = field(default_factory=Hooks)

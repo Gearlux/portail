@@ -82,6 +82,25 @@ This registers `demoapp [workspace.yaml]` (the default command), `demoapp worksp
 `--browser always|new|never` on the serving commands. `strict_flags=True` is the app's choice — and the recommended
 one: a misspelled option is then refused instead of silently dropped.
 
+**An app that serves a folder** says so — `AppSpec(..., workspace="folder")` — and its `open_file` is handed the
+folder's absolute path. Nothing is read from the folder before it is served, so its port is the default one or
+`--port`.
+
+**A serving option of the app's own** (`--notes-dir`, say): the workspace carries it as `options = {"notes_dir": "/n"}`
+and answers it under `options` in `info()`. The app registers `open` and `restart` itself, asks portail for the other
+commands, and hands the option on:
+
+```python
+lifecycle = add_lifecycle_commands(app, SPEC, open_file=open_folder, open_empty=open_here, commands=("stop", "list"))
+
+@app.command(name="open", default=True, positionals=["folder"], short={"b": "background"})
+def open_(folder: str = "", notes_dir: str = "", port: int = 0, background: bool = False) -> None:
+    lifecycle.open(folder, port=port, background=background, options={"notes_dir": notes_dir} if notes_dir else {})
+```
+
+`open_file` then receives it as a keyword argument (`open_folder(path, notes_dir="/n")`), a `--background` child is
+started with `--notes-dir /n`, and a restart that names no option serves with the ones the running server has.
+
 ### 4. Mount the shell on the app's Flask app
 
 ```python

@@ -127,6 +127,30 @@ document the app cannot load, are the app's (`serving.continue_command` names th
 address against its own location, one level up; the worker gets the stream's address from the page.
 **Consequences.** Pins: `tests/test_shell.py::TestEveryAddressIsRelative`.
 
+## 11a. The shell leaves `/api/workspace` to an app that answers it
+
+**Context.** An app whose own page already joins through `GET /api/workspace` — with another answer than
+`Served.info()` — could not mount the shell: two routes, one address.
+**Decision.** `mount_shell` adds its `/api/workspace` only when the app routes none (the rule it has for `/`): mount
+the shell AFTER the app's own routes. `/api/meta` stays the shell's — the app's identity is never the app's to answer.
+**Consequences.** Such an app's ⏻ / ↻ question about unsaved changes reads the app's own answer; it carries `path`
+and `dirty` there if it wants the question. Pins: `tests/test_folder_workspace.py::TestAnAppsOwnWorkspaceRoute`.
+
+## 11b. A workspace may be a folder, and may carry serving options
+
+**Context.** Measured with an app that serves a folder of files: `open <folder>` was refused as `workspace file …
+does not exist`, `restart <folder>` as `neither a workspace file nor a type workspace`, and a `--background` child was
+started without the app's own `--…-dir` option, because its argv is rebuilt from the path and the port.
+**Decision.** `AppSpec.workspace` is `"file"` (the default) or `"folder"`: every place that asks "is this a workspace
+on disk" asks `Lifecycle.is_workspace`, and nothing is read from a folder before it is served (no port of its own).
+What the app opens with nothing named is remembered by its path when it has one. A workspace MAY carry `options`
+(`Dict[str, str]`): `background_command` appends them as `--key value`, `info()` answers them, discovery keeps them
+(`server_entry["options"]`), and a restart hands them to the app's `open_file` as keyword arguments — the ones named
+on the command line, else the running server's. An app whose serving commands take such options registers those
+commands itself and asks for the rest (`add_lifecycle_commands(commands=…)`).
+**Consequences.** An app without options gets exactly the argv it got before. Options are text; the app converts.
+Pins: `tests/test_folder_workspace.py`, the demo `tests/demo_folder_cli.py`.
+
 ## 12. Strict options
 
 **Context.** Measured: `stop --port 8799` — an option `stop` did not have — fell through to the config overrides and
