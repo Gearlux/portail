@@ -1011,9 +1011,17 @@ def serve_detached(spec: AppSpec, target: Served, continuing: Optional[Path] = N
     return False
 
 
+def page_of(target: Served) -> str:
+    """The part of the address a workspace's tab opens on (its ``page``: ``?item=7``) — blank when it names none."""
+    page = getattr(target, "page", "")
+    return page.lstrip("/") if isinstance(page, str) else ""
+
+
 def open_browser(spec: AppSpec, target: Served) -> None:
-    """Open the default browser on ``target``'s address — one line naming the address when no browser could be."""
-    url = Server(spec, target).url()
+    """Open the default browser on ``target``'s address — on the page the workspace names (:func:`page_of`), else the
+    address alone; one line naming what would have opened when no browser could be."""
+    page = page_of(target)
+    url = Server(spec, target).url() + (f"/{page}" if page else "")
     logger.debug(f"opening {url} in the default browser")
     if not webbrowser.open(url):
         print(f"{spec.name}: no browser could be opened — open {url} yourself")

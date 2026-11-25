@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **A workspace may name the page its tab opens on** — an optional `page` attribute (`?item=7`): `--browser` opens
+  `http://127.0.0.1:8790/?item=7` in place of the address alone. A workspace without it opens what it always did.
+
 ### Changed
 - **The licence is now the PolyForm Noncommercial License 1.0.0** (`LICENSE`, `pyproject.toml`): free for personal, academic and other noncommercial use; commercial use needs a separate licence from the author. It was MIT; the versions released under MIT keep that licence.
 

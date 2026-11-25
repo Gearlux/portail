@@ -24,6 +24,10 @@ class Served(Protocol):
     A workspace MAY also carry ``options``, a ``Dict[str, str]`` of the app's own serving options (``{"notes_dir":
     "/n"}``): each is handed to the command that serves it again (``--notes-dir /n``, a ``--background`` child), and
     answered under ``options`` by :meth:`info` so a restart serves with what the running server has.
+
+    It MAY carry ``page`` too, a ``str``: the part of the address its browser tab opens on (``?item=7`` →
+    ``http://127.0.0.1:8790/?item=7``), for a start that named one thing of the workspace. It is read when the browser
+    is opened and nowhere else: never registered, never handed to a ``--background`` child or a restart.
     """
 
     host: str

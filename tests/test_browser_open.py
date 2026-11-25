@@ -161,6 +161,37 @@ class TestAForegroundStart:
         assert f"demoapp: no browser could be opened — open {URL} yourself" in capsys.readouterr().out
 
 
+class TestAWorkspaceThatNamesItsPage:
+    """A workspace MAY carry ``page`` — the part of the address its tab opens on (``?item=7``): a start that named one
+    thing of the workspace opens the browser on it. One that carries none opens the address alone, as before."""
+
+    def _named(self, page: str) -> DemoWorkspace:
+        workspace = DemoWorkspace()
+        workspace.page = page  # type: ignore[attr-defined]  # the optional attribute, as an app sets it
+        return workspace
+
+    @pytest.mark.parametrize("page", ["?item=7", "/?item=7"])
+    def test_the_tab_opens_on_the_page(self, monkeypatch: Any, browser_opens: List[str], page: str) -> None:
+        Foreground(monkeypatch, browser_opens)
+        lifecycle.serve(self._named(page), browser="new")
+        assert browser_opens == [f"{URL}/?item=7"]
+
+    def test_an_already_running_server_is_opened_on_it_too(self, monkeypatch: Any, browser_opens: List[str]) -> None:
+        _already_serving(monkeypatch, meta())
+        lifecycle.serve(self._named("?item=7"), browser="always")
+        assert browser_opens == [f"{URL}/?item=7"]
+
+    def test_a_blank_page_is_the_address_alone(self, monkeypatch: Any, browser_opens: List[str]) -> None:
+        Foreground(monkeypatch, browser_opens)
+        lifecycle.serve(self._named(""), browser="new")
+        assert browser_opens == [URL]
+
+    def test_the_line_of_a_machine_without_a_browser_names_the_page(self, monkeypatch: Any, capsys: Any) -> None:
+        monkeypatch.setattr(serving.webbrowser, "open", lambda url, *args, **kwargs: False)
+        serving.open_browser(lifecycle.spec, self._named("?item=7"))
+        assert f"demoapp: no browser could be opened — open {URL}/?item=7 yourself" in capsys.readouterr().out
+
+
 class TestTheSameWorkspaceAlreadyRuns:
     def test_new_prints_the_report_and_opens_nothing(
         self, monkeypatch: Any, capsys: Any, browser_opens: List[str]

@@ -14,7 +14,7 @@ Root `AGENTS.md` rules are not repeated here.
 - **The seam** (`portail/spec.py`): an app supplies an `AppSpec` (its name, CLI module, default port, state folder,
   whether its workspace is a `"file"` or a `"folder"`, `Hooks`) and a workspace implementing the `Served` protocol
   (`host`, `port`, `path`, `template`, `title`, `state_dir()`, `info()`; optionally `options`, the app's own serving
-  options). portail imports nothing of any app.
+  options, and `page`, the part of the address its browser tab opens on). portail imports nothing of any app.
 - **Module map:** `spec` · `errors` · `serving` · `cli` · `web` (the shell, `pages`) · `web/static/` (vanilla JS, no
   build step) · `jobs` · `mcp` · `query` · `protocols`.
 
@@ -51,6 +51,8 @@ Usage: [`docs/serving.md`](docs/serving.md); reasons: [`docs/architecture.md`](d
 - **`--background`: the conflict settles before the fork, the child's argv is REBUILT, it runs from `neutral_cwd()`,
   the parent returns only on an answer; a workspace already answering starts no child.** (`tests/test_background.py`,
   `tests/test_browser_open.py::TestABackgroundStartWhileTheSameWorkspaceRuns`) arch §5.
+- **A workspace's `page` is read by `open_browser` alone** (`serving.page_of`): never registered, never in `info()`,
+  never handed to a `--background` child or a restart. (`tests/test_browser_open.py::TestAWorkspaceThatNamesItsPage`)
 - **The browser opens only on an ANSWER**; `--browser` defaults `new` (serving) / `never` (restart); the suite never
   opens a real tab (`conftest.browser_opens`). (`tests/test_browser_open.py`) arch §6.
 - **`Hooks.prepare` runs in the terminal before `register_server`** (a `-b` child is handed `spec.env("prepared")`);

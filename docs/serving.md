@@ -28,6 +28,8 @@ app's own command (`AppSpec.name`).
 - `--browser new` (the default of the serving commands) opens the default browser once a server THIS command started
   answers; `always` also opens the one already running; `never` opens none. A machine without a browser gets one line
   naming the address. A background child never opens a tab: the terminal does, once the child answers.
+- A workspace that carries `page` (a `str`, `?item=7`) has its tab opened on it — `http://127.0.0.1:8790/?item=7` —
+  for a command that named one thing of the workspace. It is read when the browser is opened and nowhere else.
 
 ## Listing
 
