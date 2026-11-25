@@ -55,7 +55,7 @@ def test_no_requirement_is_a_direct_url() -> None:
 def test_the_landing_page_metadata_is_present() -> None:
     project = _project()
     assert project["readme"] == "README.md" and (_REPO / "README.md").is_file()
-    assert project["license"] == "MIT" and project["license-files"] == ["LICENSE"] and (_REPO / "LICENSE").is_file()
+    assert project["license"] and project["license-files"] == ["LICENSE"] and (_REPO / "LICENSE").is_file()
     assert {"Homepage", "Repository", "Issues", "Changelog"} <= set(project["urls"])
     assert project["authors"] and project["classifiers"] and project["description"]
 

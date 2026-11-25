@@ -169,4 +169,4 @@ each entry carries `host`, `port`, `label`, `identity`, `path`, `template`, `sta
 
 ## License
 
-MIT — see [LICENSE](https://github.com/Gearlux/portail/blob/main/LICENSE).
+[PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) (the `LICENSE` file): free for personal, academic and other noncommercial use. Commercial use needs a separate licence from the author.
