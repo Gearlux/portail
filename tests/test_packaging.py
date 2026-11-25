@@ -84,6 +84,22 @@ def test_the_changelog_is_shipped_in_the_sdist() -> None:
     assert "CHANGELOG.md" in included
 
 
+@pytest.mark.parametrize("word", ["tai" "dal", "ais" "land"])
+def test_the_published_text_names_no_workspace_and_no_setup_tool(word: str) -> None:
+    """The README (the PyPI page), the CHANGELOG, the pages under ``docs/`` and the package's description name neither
+    the workspace this package is developed in nor its setup tool: a reader has neither."""
+    names = ["README.md", "CHANGELOG.md", *sorted(f"docs/{page.name}" for page in (_REPO / "docs").glob("*.md"))]
+    texts = {name: (_REPO / name).read_text(encoding="utf-8") for name in names}
+    texts["pyproject.toml description"] = str(_project()["description"])
+    found = [
+        f"{name}:{lineno}: {line.strip()[:80]}"
+        for name, text in texts.items()
+        for lineno, line in enumerate(text.splitlines(), start=1)
+        if word in line.lower()
+    ]
+    assert not found, f"{word!r} in the published text:\n" + "\n".join(found)
+
+
 def test_the_changelog_has_a_section_for_this_version() -> None:
     assert f"## [{_project()['version']}]" in (_REPO / "CHANGELOG.md").read_text(encoding="utf-8")
 

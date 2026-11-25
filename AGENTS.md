@@ -22,6 +22,9 @@ Root `AGENTS.md` rules are not repeated here.
 
 - **portail names no app built on it** — not in code, tests or docs (`tests/test_no_private_names.py`). An example
   uses the demo app of the tests.
+- **The README, the CHANGELOG, the pages under `docs/` and the package description name neither the workspace this
+  package is developed in nor its setup tool**: a reader has neither.
+  (`tests/test_packaging.py::test_the_published_text_names_no_workspace_and_no_setup_tool`)
 - **Every message names the app by `AppSpec.name`**, every file by the spec's state folder, every environment
   variable through `AppSpec.env` — never a literal app name.
 - **A server is found by its IDENTITY, from the LIVE `/api/meta` answer** (`app` = the spec's name), never from the
