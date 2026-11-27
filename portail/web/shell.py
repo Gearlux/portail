@@ -10,7 +10,8 @@
   itself with the signal ``<name> stop`` sends, or launches ``<name> restart <port> --background``;
 * ``GET /api/events`` — the server-sent event stream every page listens to (``portail.web.pages``);
 * ``POST /api/leaving`` — ``{"why": "restart"}``, what ``<name> restart`` says before its stop;
-* ``GET /portail/<file>`` — the shell's own scripts and styles (``shell.js``, ``shell.css``, ``server-events.js``),
+* ``GET /portail/<file>`` — the shell's own scripts and styles (``shell.js``, ``layout.js``, ``shell.css``,
+  ``server-events.js``),
   under a path no app's ``/static`` collides with;
 * ``GET /`` — a minimal page, only when the app routes nothing there yet (a bare app and the tests have a page).
 

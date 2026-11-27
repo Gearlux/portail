@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "portail"
 version = "0.1.0a1"
-description = "A framework for workspace web apps: serving, stop/restart/list, page events, the MCP server base and a filter language."
+description = "A framework for workspace web apps: serving, stop/restart/list, page events, a pane layout, the MCP server base and a filter language."
 readme = "README.md"
 authors = [{ name = "Gert Behiels" }]
 license = "PolyForm-Noncommercial-1.0.0"

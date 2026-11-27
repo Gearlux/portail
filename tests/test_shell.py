@@ -92,7 +92,7 @@ class TestOnTheAppsOwnApp:
 class TestEveryAddressIsRelative:
     """A path proxy serves the app under a prefix: an address starting with ``/`` would leave it."""
 
-    @pytest.mark.parametrize("name", ["shell.js", "server-events.js", "index.html", "shell.css"])
+    @pytest.mark.parametrize("name", ["shell.js", "server-events.js", "layout.js", "index.html", "shell.css"])
     def test_no_shell_file_asks_by_an_absolute_path(self, name: str) -> None:
         text = (STATIC / name).read_text()
         absolute = re.findall(r"""(?:fetch\(|src=|href=|EventSource\(|Worker\(|url\()\s*["'`]/""", text)

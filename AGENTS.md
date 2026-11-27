@@ -9,14 +9,15 @@ Root `AGENTS.md` rules are not repeated here.
   Flask page and is managed from the command line; portail holds everything that does not depend on what the
   workspace holds: serving (foreground or detached), `stop` / `restart` / `list` by the server's identity, the
   browser opened on an answer, the page's shell (`/api/meta`, ⏻, ↻, every open page told when its server goes), the
-  jobs (background work with its progress and a stop), the MCP server base, and the filter language a records list
-  is searched with.
+  panes' layout (every pane dragged beside another), the jobs (background work with its progress and a stop), the
+  MCP server base, and the filter language a records list is searched with.
 - **The seam** (`portail/spec.py`): an app supplies an `AppSpec` (its name, CLI module, default port, state folder,
   whether its workspace is a `"file"` or a `"folder"`, `Hooks`) and a workspace implementing the `Served` protocol
   (`host`, `port`, `path`, `template`, `title`, `state_dir()`, `info()`; optionally `options`, the app's own serving
   options, and `page`, the part of the address its browser tab opens on). portail imports nothing of any app.
 - **Module map:** `spec` · `errors` · `serving` · `cli` · `web` (the shell, `pages`) · `web/static/` (vanilla JS, no
-  build step) · `jobs` · `mcp` · `query` · `protocols`.
+  build step: `shell.js`, `layout.js`, `server-events.js`) · `layout` (the layout's shape rule) · `jobs` · `mcp` ·
+  `query` · `protocols`.
 
 ## Rules
 
@@ -79,6 +80,32 @@ Usage: [`docs/serving.md`](docs/serving.md); reasons: [`docs/architecture.md`](d
 - **The suite never reaches a live server**: every request of the lifecycle goes through `serving._urlopen`, which
   `conftest._no_live_http` closes; a test that needs HTTP opens it itself. Real processes in tests run on free ports
   with their own HOME — never a port of the operator's, never a stop of a process the test did not start.
+
+## The panes' layout
+
+Usage: [`docs/layout.md`](docs/layout.md); reasons: [`docs/architecture.md`](docs/architecture.md) §20.
+
+- **One tree of rows and columns holds every pane** (`Portail.layout`): a node is `pane`, `row` or `column` with an
+  optional `share` (room beside its siblings, never pixels); a pane is named once. `portail.layout.checked_layout` and
+  `layout.js`'s `parsed` are the ONE shape rule written twice — a change to one is a change to both; a saved tree that
+  is no layout draws the default. (`tests/test_layout.py::TestTheLayoutRuleOnTheServer`,
+  `::TestTheFirstLayout::test_a_saved_layout_that_is_no_layout_draws_the_default`)
+- **A drop wraps its target** in a split of the drop's direction, the two sharing the target's room, then the tree is
+  put in its one form (a split of one child is that child; a split inside one of its own direction joins it, each child
+  keeping its room). The zone is the target's edge nearest the pointer; within `EDGE_PX` of the whole layout's edge
+  the target is the whole layout. (`tests/test_layout.py::TestADrop`, `::TestTheLayoutsOwnEdges`)
+- **The page's own elements are moved, never built again, and only when their place changed** — an open or a close
+  moves nothing (an element taken out of the document and back loses its scroll). A pane not `shown` takes no room
+  and keeps its leaf; one outside the layout's own containers is left where the page put it.
+  (`::test_the_moved_pane_is_the_same_element_and_keeps_what_it_holds`, `tests/test_layout.py::TestClosedPanes`)
+- **A press under 4 px is the handle's own click**; a drag swallows the click after it. `save(tree)` is called once
+  per drop, once per border let go and once per arrow key on a focused border — never for the first layout, an `add`,
+  an open, a close or a fold. (`::test_a_press_that_barely_moves_is_a_click`, `tests/test_layout.py::TestTheBorders`)
+- **A pane not `shown` is not displayed** (the layout sets `display: none` and takes it back); a `folded` one takes its
+  own size (`flex: 0 0 auto`), a split of folded panes too, and a border moves room only between the OPEN panes around
+  it. Only the room the shares divide moves: a pane's padding and border are its own (`mover`), and every pane is
+  `border-box`. (`tests/test_layout.py::TestFoldedPanes`, `::test_a_pane_not_shown_takes_no_room_even_with_padding`,
+  `::test_a_border_follows_the_pointer_beside_panes_with_padding`)
 
 ## Jobs, the MCP server base, the filter language, the protocols
 
