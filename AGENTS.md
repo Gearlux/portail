@@ -30,6 +30,9 @@ Root `AGENTS.md` rules are not repeated here.
   variable through `AppSpec.env` — never a literal app name.
 - **A server is found by its IDENTITY, from the LIVE `/api/meta` answer** (`app` = the spec's name), never from the
   registry copy alone, and a stop signals only the pids LISTENING on the ports of the servers it stops.
+- **A release is a tag `v<version>` on `main`'s merge commit** of a PR from `dev/main`; `release.yml` publishes it.
+  Each release raises every workspace floor to the newest release and runs the suite there, and a dependent's next
+  release raises its `portail>=` the same way (user choice 2026-11-26).
 - **Hooks never raise into serving**: a hook that fails is logged and serving goes on.
 
 ## Serving and the lifecycle commands
