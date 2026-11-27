@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0a2] — 2026-11-27
+
 ### Added
 - **The panes' layout** (`portail/layout.js`, `Portail.layout`): every pane of a page in one layout of rows and
   columns. A pane is dragged by its handle to the left, right, top or bottom of another pane, or along an edge of the
