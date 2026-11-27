@@ -4,7 +4,8 @@
   only the shell (what a server without an app of its own serves);
 - :mod:`portail.web.pages` is the server's one word to its pages, ``leaving``;
 - ``portail/web/static/`` holds the page side, vanilla JavaScript with no build step: ``shell.js`` (the
-  ``Portail`` namespace), ``shell.css``, ``server-events.js`` (the shared worker) and a minimal ``index.html``.
+  ``Portail`` namespace), ``layout.js`` (``Portail.layout``, the panes' layout), ``shell.css``, ``server-events.js``
+  (the shared worker) and a minimal ``index.html``.
 """
 
 from portail.web.pages import PageChannel, channel_of, mount_pages, tell_pages_leaving

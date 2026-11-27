@@ -261,3 +261,28 @@ each app answers the list and the stop in its own shape.
 **Consequences.** An app keeps a `Jobs` on its workspace and two routes. A failed work's `error` names the exception's
 type; its `message` (`<title> failed: <text>`) is the line a page says. Jobs are never workspace content: a restart
 empties the list.
+
+## 20. Every pane sits in one layout, and moves by its handle
+
+**Context.** A page of several panes had them in fixed containers: a column on the left, a column on the right, a
+strip at the bottom, each container with dividers of its own. A pane could be resized inside its container but never
+leave it, and each app wrote its own containers and dividers.
+
+**Decision.** `portail/layout.js` holds every pane of a page in ONE tree of rows and columns whose ends name the
+panes; `share` is a node's room beside its siblings (never pixels). A pane is dragged by its `data-pane-handle`; the
+zone is the edge of the pane under the pointer nearest to it, and a drop wraps that pane and the dropped one in a split
+of the drop's direction, the two sharing the pane's room. The tree is then put in its one form: a split of one child
+is that child, and a split inside one of its own direction joins it, each child keeping its room. Within a few pixels
+of the whole layout's edge the target is the whole layout — without it, no move could put a pane under all the others
+again once no row runs the full width. The layout moves the page's own elements, and only those whose place changed:
+moving an element out of the document and back resets its scroll, so an open or a close moves nothing. A pane the page
+says is not shown is not displayed and keeps its leaf; one the page has put outside the layout's own containers is left
+there. A page with a minimize button says a pane is FOLDED: it keeps its place at the size of its head, and a border
+beside it moves room between the open panes around it — the behaviour such a page had before the layout. A border
+moves only the room the shares divide (a padded pane drifted from the pointer by its padding otherwise), and it is a
+focusable separator whose arrow keys move it. A press under 4 px is the handle's click, because a handle is often a button already. The page keeps the tree;
+`portail.layout.checked_layout` is the same shape rule for an app that keeps it on the server.
+
+**Consequences.** An app hands its panes to the layout and keeps no containers or dividers of its own. A saved tree
+that is no layout draws the default, and a name the page never adds stays in the tree, so a layout survives a page that
+lacks one of its panes.

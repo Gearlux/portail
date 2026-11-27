@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0a2] — 2026-11-27
+
+### Added
+- **The panes' layout** (`portail/layout.js`, `Portail.layout`): every pane of a page in one layout of rows and
+  columns. A pane is dragged by its handle to the left, right, top or bottom of another pane, or along an edge of the
+  whole layout; the border between two panes moves the room between them, and a double-click shares it evenly. A
+  closed pane keeps its place, a folded one (a minimize button) keeps its place at the size of its head, and a focused
+  border moves with the arrow keys. The page keeps the layout where it likes and hands it back on the next load;
+  `portail.layout.checked_layout` is its shape rule on the server.
+
+### Changed
+- **portail requires the newest releases of its own dependencies** — confluid 0.5.0 (was `>=0.4.0`), liquifai
+  0.4.0 (was `>=0.3.0`) and loggair 0.3.0 (was `>=0.2.0`); the suite is tested against them.
+
 ## [0.1.0a1]
 
 The first release.

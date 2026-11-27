@@ -26,6 +26,7 @@ _MUST_SHIP = [
     "portail/web/static/shell.js",
     "portail/web/static/shell.css",
     "portail/web/static/server-events.js",
+    "portail/web/static/layout.js",
     "portail/web/static/index.html",
 ]
 

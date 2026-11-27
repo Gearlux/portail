@@ -9,6 +9,8 @@ is managed from the command line. portail holds everything that does not depend 
 - **the page's shell**: `/api/meta`, the ⏻ and ↻ buttons, and every open page told when its server goes;
 - **jobs**: background work with its progress and a cooperative stop
   ([docs/jobs.md](https://github.com/Gearlux/portail/blob/main/docs/jobs.md));
+- **the panes' layout**: every pane of a page in one layout of rows and columns, dragged to the left, right, top or
+  bottom of another ([docs/layout.md](https://github.com/Gearlux/portail/blob/main/docs/layout.md));
 - the MCP server base ([docs/mcp.md](https://github.com/Gearlux/portail/blob/main/docs/mcp.md)) and the filter
   language a records list is searched with ([docs/query.md](https://github.com/Gearlux/portail/blob/main/docs/query.md)).
 

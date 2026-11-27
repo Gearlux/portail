@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "portail"
-version = "0.1.0a1"
-description = "A framework for workspace web apps: serving, stop/restart/list, page events, the MCP server base and a filter language."
+version = "0.1.0a2"
+description = "A framework for workspace web apps: serving, stop/restart/list, page events, a pane layout, the MCP server base and a filter language."
 readme = "README.md"
 authors = [{ name = "Gert Behiels" }]
 license = "PolyForm-Noncommercial-1.0.0"
@@ -21,12 +21,15 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
+# Floors are what the suite runs against in a clean venv resolving from PyPI alone, and each release
+# raises every workspace floor to the newest release (user choice 2026-11-26). Measured 2026-11-27 at
+# confluid 0.5.0, liquifai 0.4.0 and loggair 0.3.0: the suite passed (554, 80 skipped).
 dependencies = [
     # 0.3.0 is the floor for `strict_flags=True` and the declared `short=` options every lifecycle command carries.
-    "liquifai>=0.3.0",
-    "loggair>=0.2.0",
+    "liquifai>=0.4.0",
+    "loggair>=0.3.0",
     # The MCP base hands every tool schema to `confluid.sanitize_schema`.
-    "confluid>=0.4.0",
+    "confluid>=0.5.0",
     # Imported at MODULE scope by portail.web: the shell is a Flask app.
     "flask>=3.0",
     # Imported at MODULE scope by portail.serving: a workspace file's host and port are read tag-blind with PyYAML.
